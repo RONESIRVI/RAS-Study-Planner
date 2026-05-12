@@ -1,6 +1,5 @@
 import os
 import json
-import automation_main
 import adaptive_logic
 import image_generator
 import excel_generator
@@ -15,12 +14,12 @@ def run_automation():
         image_data, classes_list = adaptive_logic.get_adaptive_tasks()
         
         if not classes_list:
-            print("ℹ️ No pending tasks found for today. (Check if everything is marked 'done')")
+            print("INFO: No pending tasks found for today. (Check if everything is marked 'done')")
         
         # 2. Generate Premium Image
         print("Generating schedule image...")
         img_path = image_generator.create_pillar_schedule_image(image_data)
-        print(f"✅ Image generated: {img_path}")
+        print(f"DONE: Image generated: {img_path}")
         
         # 3. Generate PYQ Excel Files for each class
         print(f"Generating PYQ Excel files for {len(classes_list)} topics...")
@@ -37,10 +36,10 @@ def run_automation():
         print(f"Preparing to send email with {len(attachments)} attachments...")
         mailer.send_email(attachments)
         
-        print("🎉 Success: All tasks completed.")
+        print("SUCCESS: All tasks completed.")
         
     except Exception as e:
-        print(f"❌ Error in automation flow: {e}")
+        print(f"ERROR: Error in automation flow: {e}")
         import traceback
         traceback.print_exc()
 

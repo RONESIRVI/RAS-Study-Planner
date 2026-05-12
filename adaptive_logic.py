@@ -10,14 +10,16 @@ DOWNLOAD_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format
 def get_tracker_path():
     target_path = os.path.join("data", "Master_Tracker_Live.xlsx")
     os.makedirs("data", exist_ok=True)
+    print("DEBUG: Cloud Sync -> Downloading latest from Google Drive...")
     try:
         r = requests.get(DOWNLOAD_URL, timeout=15)
         if r.status_code == 200:
             with open(target_path, "wb") as f:
                 f.write(r.content)
+            print("DEBUG: Download Success!")
             return target_path
     except:
-        pass
+        print("DEBUG: Download Failed. Using local fallback.")
     return target_path
 
 def get_adaptive_tasks():
@@ -42,6 +44,9 @@ def get_adaptive_tasks():
         if 'status' in h: col_map['status'] = i
 
     classes_list, revisions = [], []
+    print("-" * 50)
+    print(f"MASTER DEBUG: Scanning rows in {main_sheet_name}...")
+
     for row in sheet.iter_rows(min_row=4, max_row=200, values_only=True):
         if not row: continue
         topic = str(row[col_map['topic']]).strip() if col_map['topic'] < len(row) and row[col_map['topic']] else ""
@@ -49,6 +54,7 @@ def get_adaptive_tasks():
         section = str(row[col_map['section']]).strip() if col_map['section'] < len(row) and row[col_map['section']] else ""
         
         if topic and status != "done" and len(classes_list) < 2:
+            print(f"Row: {topic[:20]}... -> [PICKED]")
             classes_list.append({'subject': section, 'topic': topic})
             revisions.append({'subject': section, 'topic': f"{topic} (Same Day Rev)"})
 
@@ -66,6 +72,8 @@ def get_adaptive_tasks():
                     revisions.append({'subject': sub, 'topic': f"{top} (Rotation)"})
                     break
 
+    print("-" * 50)
+    
     # Prepare Image Data
     image_data = []
     for idx, c in enumerate(classes_list):
