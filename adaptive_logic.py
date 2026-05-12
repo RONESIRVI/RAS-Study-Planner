@@ -48,18 +48,17 @@ def get_adaptive_tasks():
     
     print(f"DEBUG: Found headers in Excel: {headers}")
     
-    col_map = {'section': 0, 'topic': 1, 'status': 12, 'comp_date': 13, 'next_action': 14}
+    col_map = {'section': 0, 'topic': 1, 'study_date': 2, 'r1_date': 3, 'r1_done': 4, 'r2_date': 5, 'r2_done': 6, 'status': 12, 'comp_date': 13}
     for i, h in enumerate(headers):
         if not h: continue
-        # Priority mapping
-        if h == 'topic': col_map['topic'] = i; continue
-        if h == 'विषय': col_map['section'] = i; continue
-        
-        if any(x in h for x in ['विषय', 'section', 'subject']) and 'important' not in h: col_map['section'] = i
-        if any(x in h for x in ['topic', 'अध्याय', 'पाठ']) and 'important' not in h: col_map['topic'] = i
-        if any(x in h for x in ['status', 'स्थिति']): col_map['status'] = i
-        if any(x in h for x in ['completion', 'पूर्ण', 't_date']): col_map['comp_date'] = i
-        if any(x in h for x in ['next action', 'अगला']): col_map['next_action'] = i
+        h_str = h.lower()
+        if h_str == 'topic': col_map['topic'] = i; continue
+        if h_str == 'विषय': col_map['section'] = i; continue
+        if 'study date' in h_str: col_map['study_date'] = i
+        if 'r1 date' in h_str: col_map['r1_date'] = i
+        if 'r1 done' in h_str: col_map['r1_done'] = i
+        if 'status' in h_str: col_map['status'] = i
+        if 'completion' in h_str or 't_date' in h_str: col_map['comp_date'] = i
     
     print(f"DEBUG: Final Column Mapping: {col_map}")
 
@@ -71,19 +70,16 @@ def get_adaptive_tasks():
         section = str(row[col_map['section']]).strip() if row[col_map['section']] else ""
         topic = str(row[col_map['topic']]).strip() if row[col_map['topic']] else ""
         status = str(row[col_map['status']]).strip().lower() if col_map['status'] < len(row) and row[col_map['status']] else ""
-        comp_date = row[col_map['comp_date']] if col_map['comp_date'] < len(row) else None
         
+        # 1. Classes Logic (Status not done)
         if status != "done" and len(classes_list) < 3: 
             classes_list.append({'subject': section, 'topic': topic})
             
-        if status == "done" and isinstance(comp_date, datetime):
-            c_date = comp_date.date()
-            diff = (today - c_date).days
-            label = ""
-            if diff == 1: label = "1st Revision"
-            elif diff == 7: label = "2nd Revision"
-            elif diff == 30: label = "3rd Revision"
-            if label: revisions.append({'subject': section, 'topic': f"{topic} ({label})"})
+        # 2. Revision Logic (Check specific dates)
+        for r_key, label in [('r1_date', 'R1'), ('r2_date', 'R2')]:
+            r_val = row[col_map.get(r_key)] if col_map.get(r_key) and col_map[r_key] < len(row) else None
+            if isinstance(r_val, datetime) and r_val.date() == today:
+                revisions.append({'subject': section, 'topic': f"{topic} ({label})"})
 
     # Format topic for image display (Keep separate)
     def get_c(idx):
