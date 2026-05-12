@@ -43,16 +43,21 @@ def get_adaptive_tasks():
     sheet = wb['📋 Master Tracker']
     
     header_row = 3
-    headers = [str(c).lower() if c else "" for c in list(sheet.iter_rows(min_row=header_row, max_row=header_row, values_only=True))[0]]
+    all_headers = list(sheet.iter_rows(min_row=header_row, max_row=header_row, values_only=True))[0]
+    headers = [str(c).lower().strip() if c else "" for c in all_headers]
+    
+    print(f"DEBUG: Found headers in Excel: {headers}")
     
     col_map = {'section': 0, 'topic': 1, 'status': 13, 'comp_date': 14, 'next_action': 15}
     for i, h in enumerate(headers):
-        h_str = str(h).lower()
-        if 'विषय' in h_str or 'section' in h_str or 'subject' in h_str: col_map['section'] = i
-        if 'topic' in h_str or 'अध्याय' in h_str or 'पाठ' in h_str: col_map['topic'] = i
-        if 'status' in h_str or 'स्थिति' in h_str: col_map['status'] = i
-        if 'completion' in h_str or 'पूर्ण' in h_str: col_map['comp_date'] = i
-        if 'next action' in h_str or 'अगला' in h_str: col_map['next_action'] = i
+        if not h: continue
+        if any(x in h for x in ['विषय', 'section', 'subject']): col_map['section'] = i
+        if any(x in h for x in ['topic', 'अध्याय', 'पाठ', 'शीर्षक', 'विवरण']): col_map['topic'] = i
+        if any(x in h for x in ['status', 'स्थिति']): col_map['status'] = i
+        if any(x in h for x in ['completion', 'पूर्ण', 'तारीख']): col_map['comp_date'] = i
+        if any(x in h for x in ['next action', 'अगला']): col_map['next_action'] = i
+    
+    print(f"DEBUG: Final Column Mapping: {col_map}")
 
     today = datetime.now().date()
     classes_list, revisions = [], []
