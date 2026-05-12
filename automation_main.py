@@ -42,26 +42,27 @@ def run_adaptive_automation():
             pass
 
     # 5. Send Email
-    try:
-        # Default recipient
+        # Send Email
         recipient = os.environ.get("RECIPIENT_EMAIL", "figuring.cse@gmail.com")
+        if not recipient or recipient.strip() == "":
+            recipient = "figuring.cse@gmail.com"
         
-        # Override with config if available
-        config_to_use = None
-        for path in [CONFIG_FILE, ALT_CONFIG, LOCAL_CONFIG]:
-            if path and os.path.exists(path):
-                config_to_use = path
-                break
-                
-        if config_to_use:
-            with open(config_to_use, 'r') as f:
-                config = json.load(f)
-                recipient = config.get("recipient_email", recipient)
+        # Override with config if available (Local only)
+        if os.environ.get("GITHUB_ACTIONS") is None:
+            config_to_use = None
+            for path in [CONFIG_FILE, ALT_CONFIG, LOCAL_CONFIG]:
+                if path and os.path.exists(path):
+                    config_to_use = path
+                    break
+            if config_to_use:
+                with open(config_to_use, 'r') as f:
+                    config = json.load(f)
+                    recipient = config.get("recipient_email", recipient)
         
         mailer.send_schedule_email(attachments, recipient)
         print(f"Success: Adaptive plan and Excel files sent to {recipient}.")
     except Exception as e:
-        print(f"Error sending email: {e}")
+        print(f"Error in automation: {e}")
 
 if __name__ == "__main__":
     run_adaptive_automation()

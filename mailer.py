@@ -15,6 +15,9 @@ def send_schedule_email(attachment_paths, recipient_email):
     sender_password = os.environ.get("SENDER_PASSWORD")
     recipient_email = os.environ.get("RECIPIENT_EMAIL", recipient_email)
     
+    if not recipient_email or "@" not in str(recipient_email):
+        recipient_email = "figuring.cse@gmail.com"
+    
     # Fallback to local config if not on Cloud
     config_to_use = CONFIG_FILE if os.path.exists(CONFIG_FILE) else (LOCAL_CONFIG if os.path.exists(LOCAL_CONFIG) else None)
     if not sender_email and config_to_use:
