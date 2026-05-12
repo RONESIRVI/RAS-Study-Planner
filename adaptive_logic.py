@@ -73,19 +73,19 @@ def get_adaptive_tasks():
         topic = str(row[col_map['topic']]).strip() if row[col_map['topic']] else ""
         status = str(row[col_map['status']]).strip().lower() if col_map['status'] < len(row) and row[col_map['status']] else ""
         
-        # WEEKEND LOGIC: Skip History on weekends, take NEW subject
-        # WEEKDAY LOGIC: Focus on History/Main subjects
-        is_history = "इतिहास" in section
-        if is_weekend and is_history: continue # Skip history on Sat/Sun
-        if not is_weekend and not is_history and section != "": continue # Focus only on history Mon-Fri
-        
         # 1. Classes Logic (Limit to 2)
-        if status != "done" and len(classes_list) < 2: 
+        # Apply WEEKDAY/WEEKEND Filter ONLY to New Classes
+        is_history = "इतिहास" in section
+        show_in_classes = True
+        if is_weekend and is_history: show_in_classes = False
+        if not is_weekend and not is_history and section != "": show_in_classes = False
+        
+        if status != "done" and len(classes_list) < 2 and show_in_classes: 
             classes_list.append({'subject': section, 'topic': topic})
             # Add to same-day revision
             revisions.append({'subject': section, 'topic': f"{topic} (Same Day Rev)"})
             
-        # 2. Spaced Repetition (Check R1, R2 dates)
+        # 2. Spaced Repetition (ALWAYS RUNS for all subjects)
         for r_key, label in [('r1_date', 'R1'), ('r2_date', 'R2')]:
             r_val = row[col_map.get(r_key)] if col_map.get(r_key) and col_map[r_key] < len(row) else None
             if isinstance(r_val, datetime) and r_val.date() == today:
