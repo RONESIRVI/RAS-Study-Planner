@@ -42,7 +42,7 @@ def run_adaptive_automation():
             pass
 
     # 5. Send Email
-        # Send Email
+    try:
         recipient = os.environ.get("RECIPIENT_EMAIL", "figuring.cse@gmail.com")
         if not recipient or recipient.strip() == "":
             recipient = "figuring.cse@gmail.com"
