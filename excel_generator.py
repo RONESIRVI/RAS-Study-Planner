@@ -41,8 +41,14 @@ def generate_topic_excel(topic_name):
         try:
             wb = openpyxl.load_workbook(f, data_only=True, read_only=True)
             ws = wb['PYQ Bank']
+            # Smart Match: Clean topic name (remove brackets)
+            clean_topic = topic_name.split('(')[0].strip().lower()
+            keywords = [k for k in clean_topic.split() if len(k) > 2]
+            
             for row in ws.iter_rows(min_row=4, values_only=True):
-                if topic_name.lower() in str(row[1]).lower() or topic_name.lower() in str(row[2]).lower():
+                target_text = f"{str(row[1])} {str(row[2])}".lower()
+                # If the main topic name is in the row, or at least 2 keywords match
+                if clean_topic in target_text or (keywords and sum(1 for k in keywords if k in target_text) >= 1):
                     all_questions.append(row)
         except: pass
 

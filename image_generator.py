@@ -25,8 +25,13 @@ def create_pillar_schedule_image(tasks_data):
     for rev in revisions[:3]:
         revisions_html += f"<li><strong>{rev['subject']}</strong><br><small>{rev['topic']}</small></li>"
 
-    t0 = tasks_data[0]
-    pyq_topic = f"{t0.get('subject')}: {t0.get('topic')}" if t0.get('topic') else t0.get('subject')
+    # Prepare PYQ Test Section (Show all assigned topics)
+    pyq_topics_html = ""
+    for task in [tasks_data[0], tasks_data[1]]:
+        sub = task.get('subject', '')
+        top = task.get('topic', '')
+        if sub and '[' not in sub:
+            pyq_topics_html += f"<li>Study: {sub}: {top}</li>"
 
     html_content = f"""
     <!DOCTYPE html>
@@ -151,7 +156,7 @@ def create_pillar_schedule_image(tasks_data):
                 <div class="card-header pyq-h">PYQ TEST</div>
                 <div class="content">
                     <h3>1. PYQ test</h3>
-                    <ul><li>Study: {pyq_topic}</li></ul>
+                    <ul>{pyq_topics_html}</ul>
                 </div>
             </div>
             <div class="card">

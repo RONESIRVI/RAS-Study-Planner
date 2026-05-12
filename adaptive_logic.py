@@ -68,27 +68,37 @@ def get_adaptive_tasks():
     
     classes_list, revisions = [], []
     
+    # Pre-clean headers for easier matching
+    clean_headers = [str(h).lower().strip().replace('\n', ' ') for h in headers]
+    
+    # Find column indices dynamically and reliably
+    col_map = {'section': 0, 'topic': 1, 'status': 13}
+    for i, h in enumerate(clean_headers):
+        if 'विषय' in h or 'section' in h: col_map['section'] = i
+        if 'topic' in h: col_map['topic'] = i
+        if 'status' in h: col_map['status'] = i
+        if 'study date' in h: col_map['study_date'] = i
+        if 'r1 date' in h: col_map['r1_date'] = i
+
     for row in sheet.iter_rows(min_row=header_row + 1, values_only=True):
-        if not any(row) or len(row) < 2: continue
+        if not row or len(row) <= max(col_map.values()): continue
+        
         section = str(row[col_map['section']]).strip() if row[col_map['section']] else ""
         topic = str(row[col_map['topic']]).strip() if row[col_map['topic']] else ""
-        status = str(row[col_map['status']]).strip().lower() if col_map['status'] < len(row) and row[col_map['status']] else ""
+        status = str(row[col_map['status']]).strip().lower() if row[col_map['status']] else ""
         
-        # 1. Classes Logic (Limit to 2)
-        # Sequence is critical. We pick the first 2 pending topics in order.
+        if not topic or status == "done": continue
+        
+        # Priority Logic: Weekday vs Weekend
         is_history = "इतिहास" in section
-        is_weekend = today.weekday() >= 5
-        
-        # Priority: On weekdays show History, on weekends show others.
-        # But NEVER skip a pending topic if it matches the day's priority.
         match_priority = (not is_weekend and is_history) or (is_weekend and not is_history)
         
-        if status != "done" and len(classes_list) < 2:
-            if match_priority:
+        if len(classes_list) < 2:
+            if match_priority or len(classes_list) > 0: # If we have 1, pick the next one regardless to fill space
                 classes_list.append({'subject': section, 'topic': topic})
                 revisions.append({'subject': section, 'topic': f"{topic} (Same Day Rev)"})
-            elif not any(is_history == ("इतिहास" in s['subject']) for s in classes_list) and len(classes_list) == 0:
-                # Fallback if the priority subject is not found at all, pick the next available
+            elif not match_priority and len(classes_list) == 0:
+                # If even the first one doesn't match priority, we still pick it to avoid empty plan
                 classes_list.append({'subject': section, 'topic': topic})
                 revisions.append({'subject': section, 'topic': f"{topic} (Same Day Rev)"})
             
