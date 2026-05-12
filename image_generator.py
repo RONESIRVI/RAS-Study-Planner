@@ -21,21 +21,20 @@ def create_pillar_schedule_image(tasks_data):
             classes_html += f"<li><strong>{sub}</strong><br><small>{top}</small></li>"
             
     revisions_html = ""
-    # Flatten revisions if nested, or handle as list
-    all_revs = []
+    # Smart Find: Search for the Revision task in the list
     for item in tasks_data:
-        if 'revisions' in item:
-            all_revs.extend(item['revisions'])
-            
-    for rev in all_revs:
-        revisions_html += f"<li><strong>{rev['subject']}</strong><br><small>{rev['topic']}</small></li>"
+        if item.get('task') == 'REVISION':
+            revisions = item.get('revisions', [])
+            for rev in revisions:
+                revisions_html += f"<li><strong>{rev['subject']}</strong><br><small>{rev['topic']}</small></li>"
+            break
 
     # Prepare PYQ Test Section (All classes)
     pyq_topics_html = ""
     for task in tasks_data:
-        sub = task.get('subject', '')
-        top = task.get('topic', '')
-        if sub and '[' not in sub and 'task' in task and 'CLASSES' in task['task']:
+        if 'CLASSES' in task.get('task', ''):
+            sub = task.get('subject', '')
+            top = task.get('topic', '')
             pyq_topics_html += f"<li>Study: {sub}: {top}</li>"
 
     html_content = f"""

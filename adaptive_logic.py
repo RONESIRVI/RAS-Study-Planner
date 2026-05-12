@@ -8,34 +8,30 @@ SHEET_ID = "1Zo81TfPcU09ErH7g-bj-4TksqceuBmiL"
 DOWNLOAD_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=xlsx"
 
 def get_tracker_path():
-    target_path = os.path.join("data", "Master_Tracker_Live.xlsx")
-    
-    # 1. If on Cloud (GitHub)
-    if os.environ.get("GITHUB_ACTIONS"):
-        if os.path.exists(target_path): return target_path
-        print("Cloud Mode: Downloading latest tracker...")
-        try:
-            os.makedirs("data", exist_ok=True)
-            r = requests.get(DOWNLOAD_URL)
-            with open(target_path, "wb") as f:
-                f.write(r.content)
-            return target_path
-        except:
-            return glob.glob(os.path.join("**", "*Master Tracker RAS.xlsx"), recursive=True)[0]
-    
-    # 2. If on Local PC, search multiple locations
-    search_paths = [
-        os.path.join("data", "Master_Tracker_Live.xlsx"),
-        "Master_Tracker_Live.xlsx",
-        os.path.join("..", "राजस्थान का इतिहास", "📋 Master Tracker", "Master Tracker RAS.xlsx"),
-        r'C:\Users\jlpms\OneDrive\Desktop\राजस्थान का इतिहास\📋 Master Tracker\Master Tracker RAS.xlsx'
+    # Potential search directories
+    search_dirs = [
+        r"R:\Study_Automation_System",
+        r"R:\Study_Automation_System\data",
+        os.path.join(os.path.expanduser("~"), "OneDrive", "Desktop"),
+        os.path.join(os.path.expanduser("~"), "Desktop")
     ]
-    for p in search_paths:
-        if os.path.exists(p): return p
-        
-    # Fallback search
-    found = glob.glob(os.path.join("**", "*Master Tracker RAS.xlsx"), recursive=True)
-    return found[0] if found else target_path
+    
+    found_files = []
+    for d in search_dirs:
+        if os.path.exists(d):
+            # Find all xlsx files with 'Master Tracker' in name
+            pattern = os.path.join(d, "*Master Tracker*.xlsx")
+            found_files.extend(glob.glob(pattern))
+            # Also check for 'Master_Tracker_Live'
+            found_files.extend(glob.glob(os.path.join(d, "Master_Tracker_Live.xlsx")))
+
+    if not found_files:
+        return os.path.join("data", "Master_Tracker_Live.xlsx")
+    
+    # Sort by modification time (Newest first)
+    found_files.sort(key=os.path.getmtime, reverse=True)
+    print(f"DEBUG: Found {len(found_files)} potential trackers. Choosing newest: {found_files[0]}")
+    return found_files[0]
 
 def get_adaptive_tasks():
     today = datetime.now().date()
@@ -102,19 +98,25 @@ def get_adaptive_tasks():
         if h_str == 'topic': topic_idx = i # Strict match for 'topic'
         if h_str == 'status': status_idx = i
 
-    print(f"DEBUG: Using Indices - Section:{section_idx}, Topic:{topic_idx}, Status:{status_idx}")
-
+    print(f"DEBUG: Reading File -> {os.path.abspath(tracker_file)}")
+    
     count = 0
-    # Sequential Picker: Pick first 4 pending tasks without any complex filtering
+    # Sequential Picker: Pick first 2 pending tasks
     for row_idx, row in enumerate(sheet.iter_rows(min_row=4, max_row=200, values_only=True), 4):
         if not row: continue
         
         section = str(row[section_idx]).strip() if row[section_idx] is not None else ""
         topic = str(row[topic_idx]).strip() if row[topic_idx] is not None else ""
-        status = str(row[status_idx]).strip().lower() if status_idx < len(row) and row[status_idx] is not None else ""
         
+        raw_status = row[status_idx] if status_idx < len(row) else None
+        status = str(raw_status).strip().lower() if raw_status is not None else ""
+        
+        # Super Safe Debug for first few rows
+        if row_idx <= 6:
+            print(f"DEBUG: Row {row_idx} | Topic: '{topic}' | Raw Status: '{raw_status}'")
+
         if topic and status != "done":
-            if len(classes_list) < 4:
+            if len(classes_list) < 2:
                 print(f"DEBUG: ✅ PICKED Topic at Row {row_idx}: {topic}")
                 classes_list.append({'subject': section, 'topic': topic})
                 revisions.append({'subject': section, 'topic': f"{topic} (Same Day Rev)"})
