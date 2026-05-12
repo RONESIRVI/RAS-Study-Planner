@@ -74,8 +74,10 @@ def get_adaptive_tasks():
         # 1. Classes Logic (Status not done)
         if status != "done" and len(classes_list) < 3: 
             classes_list.append({'subject': section, 'topic': topic})
+            # Add to same-day revision
+            revisions.append({'subject': section, 'topic': f"{topic} (Same Day Rev)"})
             
-        # 2. Revision Logic (Check specific dates)
+        # 2. Revision Logic (Check specific dates for Spaced Repetition)
         for r_key, label in [('r1_date', 'R1'), ('r2_date', 'R2')]:
             r_val = row[col_map.get(r_key)] if col_map.get(r_key) and col_map[r_key] < len(row) else None
             if isinstance(r_val, datetime) and r_val.date() == today:
