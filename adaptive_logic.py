@@ -62,7 +62,9 @@ def get_adaptive_tasks():
     
     print(f"DEBUG: Final Column Mapping: {col_map}")
 
-    today = datetime.now().date()
+    today_day = today.weekday()  # 0=Mon, 5=Sat, 6=Sun
+    is_weekend = today_day >= 5
+    
     classes_list, revisions = [], []
     
     for row in sheet.iter_rows(min_row=header_row + 1, values_only=True):
@@ -71,13 +73,19 @@ def get_adaptive_tasks():
         topic = str(row[col_map['topic']]).strip() if row[col_map['topic']] else ""
         status = str(row[col_map['status']]).strip().lower() if col_map['status'] < len(row) and row[col_map['status']] else ""
         
-        # 1. Classes Logic (Status not done)
-        if status != "done" and len(classes_list) < 3: 
+        # WEEKEND LOGIC: Skip History on weekends, take NEW subject
+        # WEEKDAY LOGIC: Focus on History/Main subjects
+        is_history = "इतिहास" in section
+        if is_weekend and is_history: continue # Skip history on Sat/Sun
+        if not is_weekend and not is_history and section != "": continue # Focus only on history Mon-Fri
+        
+        # 1. Classes Logic (Limit to 2)
+        if status != "done" and len(classes_list) < 2: 
             classes_list.append({'subject': section, 'topic': topic})
             # Add to same-day revision
             revisions.append({'subject': section, 'topic': f"{topic} (Same Day Rev)"})
             
-        # 2. Revision Logic (Check specific dates for Spaced Repetition)
+        # 2. Spaced Repetition (Check R1, R2 dates)
         for r_key, label in [('r1_date', 'R1'), ('r2_date', 'R2')]:
             r_val = row[col_map.get(r_key)] if col_map.get(r_key) and col_map[r_key] < len(row) else None
             if isinstance(r_val, datetime) and r_val.date() == today:
