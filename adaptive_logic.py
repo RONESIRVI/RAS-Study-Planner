@@ -29,7 +29,7 @@ def get_adaptive_tasks():
     sheet_names = wb.sheetnames
     
     # 1. Main Sheet
-    main_sheet_name = next((s for s in ['📋 Master Tracker', 'Master Tracker'] if s in sheet_names), sheet_names[0])
+    main_sheet_name = next((s for s in ['Master Tracker', 'Master Tracker'] if s in sheet_names), sheet_names[0])
     sheet = wb[main_sheet_name]
     
     header_row = 3
@@ -37,11 +37,11 @@ def get_adaptive_tasks():
     if not all_headers: return [], []
     headers = [str(c).lower().strip() if c else "" for c in all_headers[0]]
     
-    col_map = {'section': 0, 'topic': 1, 'status': 13}
+    col_map = {'section': 0, 'topic': 1, 'Action: 13}
     for i, h in enumerate(headers):
         if 'विषय' in h: col_map['section'] = i
         if 'topic' in h: col_map['topic'] = i
-        if 'status' in h: col_map['status'] = i
+        if 'Action' in h: col_map['action] = i
 
     classes_list, revisions = [], []
     print("-" * 50)
@@ -50,10 +50,10 @@ def get_adaptive_tasks():
     for row in sheet.iter_rows(min_row=4, max_row=200, values_only=True):
         if not row: continue
         topic = str(row[col_map['topic']]).strip() if col_map['topic'] < len(row) and row[col_map['topic']] else ""
-        status = str(row[col_map['status']]).strip().lower() if col_map['status'] < len(row) and row[col_map['status']] else ""
+        action = str(row[col_map['action]]).strip().lower() if col_map['action'] < len(row) and row[col_map['Action']] else ""
         section = str(row[col_map['section']]).strip() if col_map['section'] < len(row) and row[col_map['section']] else ""
         
-        if topic and status != "done" and len(classes_list) < 2:
+        if topic and action != "done" and len(classes_list) < 2:
             print(f"Row: {topic[:20]}... -> [PICKED]")
             classes_list.append({'subject': section, 'topic': topic})
             revisions.append({'subject': section, 'topic': f"{topic} (Same Day Rev)"})
