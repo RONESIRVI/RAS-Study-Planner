@@ -47,11 +47,12 @@ def get_adaptive_tasks():
     
     col_map = {'section': 0, 'topic': 1, 'status': 13, 'comp_date': 14, 'next_action': 15}
     for i, h in enumerate(headers):
-        if 'विषय' in h or 'section' in h: col_map['section'] = i
-        if 'topic' in h: col_map['topic'] = i
-        if 'status' in h: col_map['status'] = i
-        if 'completion' in h: col_map['comp_date'] = i
-        if 'next action' in h: col_map['next_action'] = i
+        h_str = str(h).lower()
+        if 'विषय' in h_str or 'section' in h_str or 'subject' in h_str: col_map['section'] = i
+        if 'topic' in h_str or 'अध्याय' in h_str or 'पाठ' in h_str: col_map['topic'] = i
+        if 'status' in h_str or 'स्थिति' in h_str: col_map['status'] = i
+        if 'completion' in h_str or 'पूर्ण' in h_str: col_map['comp_date'] = i
+        if 'next action' in h_str or 'अगला' in h_str: col_map['next_action'] = i
 
     today = datetime.now().date()
     classes_list, revisions = [], []
@@ -75,17 +76,15 @@ def get_adaptive_tasks():
             elif diff == 30: label = "3rd Revision"
             if label: revisions.append({'subject': section, 'topic': f"{topic} ({label})"})
 
-    # Format topic for image display
-    def fmt_t(idx):
-        if idx < len(classes_list):
-            c = classes_list[idx]
-            return f"{c['subject']}: {c['topic']}" if c['subject'] and c['topic'] else (c['subject'] or c['topic'])
-        return "[Complete]"
+    # Format topic for image display (Keep separate)
+    def get_c(idx):
+        if idx < len(classes_list): return classes_list[idx]
+        return {'subject': '[Complete]', 'topic': ''}
 
     image_data = [
-        {'sr': 1, 'task': 'CLASSES 1', 'topic': fmt_t(0)},
-        {'sr': 2, 'task': 'CLASSES 2', 'topic': fmt_t(1)},
+        {'sr': 1, 'task': 'CLASSES 1', 'subject': get_c(0)['subject'], 'topic': get_c(0)['topic']},
+        {'sr': 2, 'task': 'CLASSES 2', 'subject': get_c(1)['subject'], 'topic': get_c(1)['topic']},
         {'sr': 3, 'task': 'REVISION', 'revisions': revisions},
-        {'sr': 4, 'task': 'Analysis', 'topic': "PYQ & MCQ Test Review"}
+        {'sr': 4, 'task': 'Analysis', 'subject': 'PYQ Review', 'topic': 'Previous Year Questions Analysis'}
     ]
     return image_data, classes_list

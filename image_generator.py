@@ -14,20 +14,19 @@ def create_pillar_schedule_image(tasks_data):
     # Prepare Content
     classes_html = ""
     for idx in [0, 1]:
-        t = tasks_data[idx].get('topic', '')
-        if t and '[' not in t:
-            if ':' in t:
-                subj, top = t.split(':', 1)
-                classes_html += f"<li><strong>{subj.strip()}</strong><br><small>Topic: {top.strip()}</small></li>"
-            else:
-                classes_html += f"<li>{t}</li>"
+        task = tasks_data[idx]
+        sub = task.get('subject', '')
+        top = task.get('topic', '')
+        if sub and '[' not in sub:
+            classes_html += f"<li><strong>{sub}</strong><br><small>अध्याय: {top}</small></li>"
             
     revisions_html = ""
     revisions = tasks_data[2].get('revisions', [])
     for rev in revisions[:3]:
         revisions_html += f"<li><strong>{rev['subject']}</strong><br><small>{rev['topic']}</small></li>"
 
-    pyq_topic = tasks_data[0].get('topic', 'Topic Pending')
+    t0 = tasks_data[0]
+    pyq_topic = f"{t0.get('subject')}: {t0.get('topic')}" if t0.get('topic') else t0.get('subject')
 
     html_content = f"""
     <!DOCTYPE html>
@@ -115,6 +114,9 @@ def create_pillar_schedule_image(tasks_data):
                 left: 0;
                 font-size: 14px;
             }}
+            .rev-sub {{ font-weight: bold; }}
+            .subject-label {{ font-weight: bold; color: #333; }}
+            .topic-text {{ color: #555; }}
             .footer {{
                 position: absolute;
                 bottom: 20px;
