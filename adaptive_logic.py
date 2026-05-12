@@ -26,13 +26,14 @@ def get_adaptive_tasks():
     wb = openpyxl.load_workbook(tracker_file, data_only=True, read_only=True)
     sheet_names = wb.sheetnames
     
-    # 1. Get Main Tasks from Master Tracker
+    # 1. Main Sheet
     main_sheet_name = next((s for s in ['📋 Master Tracker', 'Master Tracker'] if s in sheet_names), sheet_names[0])
     sheet = wb[main_sheet_name]
     
     header_row = 3
-    all_headers = list(sheet.iter_rows(min_row=header_row, max_row=header_row, values_only=True))[0]
-    headers = [str(c).lower().strip() if c else "" for c in all_headers]
+    all_headers = list(sheet.iter_rows(min_row=header_row, max_row=header_row, values_only=True))
+    if not all_headers: return [], []
+    headers = [str(c).lower().strip() if c else "" for c in all_headers[0]]
     
     col_map = {'section': 0, 'topic': 1, 'status': 13}
     for i, h in enumerate(headers):
@@ -41,9 +42,8 @@ def get_adaptive_tasks():
         if 'status' in h: col_map['status'] = i
 
     classes_list, revisions = [], []
-    
-    # Pick next 2 classes
     for row in sheet.iter_rows(min_row=4, max_row=200, values_only=True):
+        if not row: continue
         topic = str(row[col_map['topic']]).strip() if col_map['topic'] < len(row) and row[col_map['topic']] else ""
         status = str(row[col_map['status']]).strip().lower() if col_map['status'] < len(row) and row[col_map['status']] else ""
         section = str(row[col_map['section']]).strip() if col_map['section'] < len(row) and row[col_map['section']] else ""
@@ -52,20 +52,18 @@ def get_adaptive_tasks():
             classes_list.append({'subject': section, 'topic': topic})
             revisions.append({'subject': section, 'topic': f"{topic} (Same Day Rev)"})
 
-    # 2. Get Revisions from "Revision Planner" Sheet
+    # 2. Revision Planner
     if 'Revision Planner' in sheet_names:
         rev_sheet = wb['Revision Planner']
-        # Search every cell for today's date
-        for row in rev_sheet.iter_rows(min_row=2, values_only=True):
-            if not any(row): continue
-            
-            sub = str(row[0]).strip() if row[0] else ""
+        for row in rev_sheet.iter_rows(min_row=2, max_row=200, values_only=True):
+            if not row or len(row) < 2: continue
+            sub = str(row[0]).strip() if row[0] else "Revision"
             top = str(row[1]).strip() if row[1] else ""
+            if not top: continue
             
-            # Check all columns starting from 3rd for today's date
             for cell_val in row[2:]:
                 if isinstance(cell_val, datetime) and cell_val.date() == today:
-                    revisions.append({'subject': sub, 'topic': f"{top} (Scheduled)"})
+                    revisions.append({'subject': sub, 'topic': f"{top} (Rotation)"})
                     break
 
     # Prepare Image Data
@@ -79,11 +77,4 @@ def get_adaptive_tasks():
     return image_data, classes_list
 
 def get_weekly_roadmap():
-    tracker_file = get_tracker_path()
-    wb = openpyxl.load_workbook(tracker_file, data_only=True, read_only=True)
-    sheet = wb.worksheets[0]
-    roadmap = []
-    for row in sheet.iter_rows(min_row=4, max_row=50, values_only=True):
-        if row[1] and len(roadmap) < 14:
-            roadmap.append(f"{row[0]}: {row[1]}")
-    return roadmap
+    return ["Next topics are loaded dynamically from Master Tracker."]
