@@ -81,26 +81,22 @@ def get_adaptive_tasks():
         if 'r1 date' in h: col_map['r1_date'] = i
 
     for row in sheet.iter_rows(min_row=header_row + 1, values_only=True):
-        if not row or len(row) <= max(col_map.values()): continue
+        if not row or len(row) < 2: continue
         
-        section = str(row[col_map['section']]).strip() if row[col_map['section']] else ""
-        topic = str(row[col_map['topic']]).strip() if row[col_map['topic']] else ""
-        status = str(row[col_map['status']]).strip().lower() if row[col_map['status']] else ""
+        # Safe access to columns
+        def get_val(idx):
+            return str(row[idx]).strip() if idx < len(row) and row[idx] is not None else ""
+
+        section = get_val(col_map['section'])
+        topic = get_val(col_map['topic'])
+        status = get_val(col_map['status']).lower()
         
         if not topic or status == "done": continue
         
-        # Priority Logic: Weekday vs Weekend
-        is_history = "इतिहास" in section
-        match_priority = (not is_weekend and is_history) or (is_weekend and not is_history)
-        
+        # Pick the first 2 available topics
         if len(classes_list) < 2:
-            if match_priority or len(classes_list) > 0: # If we have 1, pick the next one regardless to fill space
-                classes_list.append({'subject': section, 'topic': topic})
-                revisions.append({'subject': section, 'topic': f"{topic} (Same Day Rev)"})
-            elif not match_priority and len(classes_list) == 0:
-                # If even the first one doesn't match priority, we still pick it to avoid empty plan
-                classes_list.append({'subject': section, 'topic': topic})
-                revisions.append({'subject': section, 'topic': f"{topic} (Same Day Rev)"})
+            classes_list.append({'subject': section, 'topic': topic})
+            revisions.append({'subject': section, 'topic': f"{topic} (Same Day Rev)"})
             
         # 2. Spaced Repetition (ALWAYS RUNS for all subjects)
         for r_key, label in [('r1_date', 'R1'), ('r2_date', 'R2')]:

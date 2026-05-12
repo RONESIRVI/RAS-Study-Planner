@@ -1,8 +1,9 @@
 @echo off
-echo Running Study Automation Debug Mode...
+echo Running Study Automation Advanced Debug...
 R:
 cd \Study_Automation_System
-python automation_main.py
+:: Run and capture both output and errors to a file
+python automation_main.py > C:\Users\jlpms\OneDrive\Desktop\log_report.txt 2>&1
 echo.
-echo If everything looks good above, you can now run GIT_PUSH_NOW.bat
+echo Process finished. Checking logs...
 pause
