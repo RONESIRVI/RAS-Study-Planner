@@ -41,13 +41,24 @@ def get_adaptive_tasks():
     today = datetime.now().date()
     tracker_file = get_tracker_path()
     wb = openpyxl.load_workbook(tracker_file, data_only=True, read_only=True)
-    sheet = wb['📋 Master Tracker']
+    # Try multiple sheet names to be safe
+    sheet_names = [sheet.title for sheet in wb.worksheets]
+    target_sheet = None
+    for name in ['Master Tracker', '📋 Master Tracker', 'Master_Tracker']:
+        if name in sheet_names:
+            target_sheet = name
+            break
+    
+    if not target_sheet:
+        target_sheet = sheet_names[0] # Fallback to first sheet
+        
+    sheet = wb[target_sheet]
+    print(f"DEBUG: Using sheet: {target_sheet}")
     
     header_row = 3
     all_headers = list(sheet.iter_rows(min_row=header_row, max_row=header_row, values_only=True))[0]
     headers = [str(c).lower().strip() if c else "" for c in all_headers]
-    
-    print(f"DEBUG: Found headers in Excel: {headers}")
+    print(f"DEBUG: Found headers: {headers}")
     
     col_map = {'section': 0, 'topic': 1, 'study_date': 2, 'r1_date': 3, 'r1_done': 4, 'r2_date': 5, 'r2_done': 6, 'status': 12, 'comp_date': 13}
     for i, h in enumerate(headers):
@@ -87,24 +98,26 @@ def get_adaptive_tasks():
     
     for i, h in enumerate(headers):
         h_str = str(h).lower()
-        if 'विषय' in h_str: section_idx = i
-        if 'topic' in h_str: topic_idx = i
-        if 'status' in h_str: status_idx = i
+        if h_str == 'विषय' or h_str == 'section': section_idx = i
+        if h_str == 'topic': topic_idx = i # Strict match for 'topic'
+        if h_str == 'status': status_idx = i
 
     print(f"DEBUG: Using Indices - Section:{section_idx}, Topic:{topic_idx}, Status:{status_idx}")
 
     count = 0
-    for row_idx, row in enumerate(sheet.iter_rows(min_row=4, values_only=True), 4):
-        if not row or len(row) <= max(section_idx, topic_idx): continue
+    # Sequential Picker: Pick first 4 pending tasks without any complex filtering
+    for row_idx, row in enumerate(sheet.iter_rows(min_row=4, max_row=200, values_only=True), 4):
+        if not row: continue
         
         section = str(row[section_idx]).strip() if row[section_idx] is not None else ""
         topic = str(row[topic_idx]).strip() if row[topic_idx] is not None else ""
         status = str(row[status_idx]).strip().lower() if status_idx < len(row) and row[status_idx] is not None else ""
         
-        if topic and status != "done" and len(classes_list) < 2:
-            print(f"DEBUG: Found pending topic at Row {row_idx}: {topic}")
-            classes_list.append({'subject': section, 'topic': topic})
-            revisions.append({'subject': section, 'topic': f"{topic} (Same Day Rev)"})
+        if topic and status != "done":
+            if len(classes_list) < 4:
+                print(f"DEBUG: ✅ PICKED Topic at Row {row_idx}: {topic}")
+                classes_list.append({'subject': section, 'topic': topic})
+                revisions.append({'subject': section, 'topic': f"{topic} (Same Day Rev)"})
             count += 1
             
         # 2. Spaced Repetition (ALWAYS RUNS for all subjects)
@@ -123,12 +136,13 @@ def get_adaptive_tasks():
         if idx < len(classes_list): return classes_list[idx]
         return {'subject': '[Complete]', 'topic': ''}
 
-    image_data = [
-        {'sr': 1, 'task': 'CLASSES 1', 'subject': get_c(0)['subject'], 'topic': get_c(0)['topic']},
-        {'sr': 2, 'task': 'CLASSES 2', 'subject': get_c(1)['subject'], 'topic': get_c(1)['topic']},
-        {'sr': 3, 'task': 'REVISION', 'revisions': revisions},
-        {'sr': 4, 'task': 'Analysis', 'subject': 'PYQ Review', 'topic': 'Previous Year Questions Analysis'}
-    ]
+    image_data = []
+    for idx, c in enumerate(classes_list):
+        image_data.append({'sr': idx+1, 'task': f'CLASSES {idx+1}', 'subject': c['subject'], 'topic': c['topic']})
+    
+    image_data.append({'sr': len(image_data)+1, 'task': 'REVISION', 'revisions': revisions})
+    image_data.append({'sr': len(image_data)+1, 'task': 'Analysis', 'subject': 'PYQ Review', 'topic': 'Previous Year Questions Analysis'})
+    
     return image_data, classes_list
 
 def get_weekly_roadmap():

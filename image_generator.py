@@ -11,26 +11,31 @@ else:
     hti = Html2Image(output_path=BASE_DIR)
 
 def create_pillar_schedule_image(tasks_data):
-    # Prepare Content
+    # Prepare Content (Dynamic Loops)
     classes_html = ""
-    for idx in [0, 1]:
-        task = tasks_data[idx]
+    for task in tasks_data:
         sub = task.get('subject', '')
         top = task.get('topic', '')
-        if sub and '[' not in sub:
-            classes_html += f"<li><strong>{sub}</strong><br><small>अध्याय: {top}</small></li>"
+        # Only add if it's a real class, not a placeholder
+        if sub and '[' not in sub and 'task' in task and 'CLASSES' in task['task']:
+            classes_html += f"<li><strong>{sub}</strong><br><small>{top}</small></li>"
             
     revisions_html = ""
-    revisions = tasks_data[2].get('revisions', [])
-    for rev in revisions[:3]:
+    # Flatten revisions if nested, or handle as list
+    all_revs = []
+    for item in tasks_data:
+        if 'revisions' in item:
+            all_revs.extend(item['revisions'])
+            
+    for rev in all_revs:
         revisions_html += f"<li><strong>{rev['subject']}</strong><br><small>{rev['topic']}</small></li>"
 
-    # Prepare PYQ Test Section (Show all assigned topics)
+    # Prepare PYQ Test Section (All classes)
     pyq_topics_html = ""
-    for task in [tasks_data[0], tasks_data[1]]:
+    for task in tasks_data:
         sub = task.get('subject', '')
         top = task.get('topic', '')
-        if sub and '[' not in sub:
+        if sub and '[' not in sub and 'task' in task and 'CLASSES' in task['task']:
             pyq_topics_html += f"<li>Study: {sub}: {top}</li>"
 
     html_content = f"""
@@ -39,140 +44,137 @@ def create_pillar_schedule_image(tasks_data):
     <head>
         <meta charset="UTF-8">
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Noto+Sans+Devanagari:wght@400;700&display=swap');
-            body {{
-                background: #0F0F1E;
-                color: white;
-                font-family: 'Poppins', 'Noto Sans Devanagari', sans-serif;
-                margin: 0;
-                padding: 40px;
-                width: 1200px;
-                height: 600px;
-                overflow: hidden;
-            }}
-            .header {{
-                font-size: 42px;
-                font-weight: 700;
-                margin-bottom: 50px;
-                text-transform: uppercase;
-                letter-spacing: 2px;
-            }}
-            .date {{
-                font-size: 20px;
-                color: #888;
-                margin-top: -40px;
-                margin-bottom: 40px;
-            }}
-            .container {{
-                display: flex;
-                gap: 20px;
-            }}
-            .card {{
-                background: white;
-                border-radius: 20px;
-                flex: 1;
-                height: 480px;
-                color: black;
-                display: flex;
-                flex-direction: column;
-                overflow: hidden;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            }}
-            .card-header {{
-                padding: 20px;
-                text-align: center;
-                font-weight: 700;
-                font-size: 24px;
-                margin-top: 60px;
-            }}
-            .classes-h {{ background: #4DB6AC; }}
-            .revision-h {{ background: #F06292; }}
-            .pyq-h {{ background: #FBC02D; }}
-            .mock-h {{ background: #BA68C8; }}
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Outfit:wght@300;600&display=swap');
             
-            .icon {{
-                font-size: 50px;
-                text-align: center;
-                margin-top: -140px;
+            :root {{
+                --bg-gradient: radial-gradient(circle at 10% 20%, rgb(15, 15, 30) 0%, rgb(8, 23, 44) 90.1%);
+                --glass-bg: rgba(255, 255, 255, 0.05);
+                --glass-border: rgba(255, 255, 255, 0.1);
+                --accent-color: #00d2ff;
             }}
-            .content {{
-                padding: 20px;
-                flex-grow: 1;
-            }}
-            .content h3 {{
-                font-size: 22px;
-                margin-bottom: 15px;
-            }}
-            .content ul {{
-                list-style: none;
+
+            body {{
+                margin: 0;
                 padding: 0;
-                font-size: 16px;
-            }}
-            .content li {{
-                margin-bottom: 12px;
-                padding-left: 25px;
+                width: 1200px;
+                min-height: 675px;
+                background: var(--bg-gradient);
+                font-family: 'Outfit', sans-serif;
+                color: white;
                 position: relative;
             }}
-            .content li::before {{
-                content: '✅';
-                position: absolute;
-                left: 0;
-                font-size: 14px;
+
+            .container {{
+                padding: 40px;
             }}
-            .rev-sub {{ font-weight: bold; }}
-            .subject-label {{ font-weight: bold; color: #333; }}
-            .topic-text {{ color: #555; }}
-            .footer {{
-                position: absolute;
-                bottom: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                color: #555;
+
+            header {{
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 40px;
+                border-bottom: 1px solid var(--glass-border);
+                padding-bottom: 20px;
+            }}
+
+            .logo-area h1 {{
+                font-size: 42px;
+                margin: 0;
+                background: linear-gradient(90deg, #fff, #00d2ff);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }}
+
+            .grid {{
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 20px;
+                align-items: start;
+            }}
+
+            .card {{
+                background: var(--glass-bg);
+                backdrop-filter: blur(10px);
+                border: 1px solid var(--glass-border);
+                border-radius: 20px;
+                padding: 20px;
+            }}
+
+            .card-header {{
+                font-size: 12px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                margin-bottom: 15px;
+                padding: 5px 10px;
+                border-radius: 5px;
+                display: inline-block;
+            }}
+
+            .cls-h {{ background: #00d2ff22; color: #00d2ff; }}
+            .rev-h {{ background: #ff009922; color: #ff0099; }}
+            .pyq-h {{ background: #ffb80022; color: #ffb800; }}
+            .mock-h {{ background: #c040ff22; color: #c040ff; }}
+
+            h3 {{ font-size: 18px; margin: 10px 0; color: #fff; opacity: 0.9; }}
+            ul {{ list-style: none; padding: 0; margin: 0; }}
+            li {{
+                margin-bottom: 12px;
+                font-size: 14px;
+                line-height: 1.4;
+                color: rgba(255, 255, 255, 0.85);
+                border-left: 2px solid var(--accent-color);
+                padding-left: 10px;
+            }}
+            strong {{ display: block; margin-bottom: 2px; color: #fff; }}
+            small {{ font-size: 12px; color: #00d2ff; opacity: 0.8; }}
+
+            .footer-tag {{
+                padding: 40px;
+                text-align: right;
+                font-size: 12px;
+                color: rgba(255, 255, 255, 0.2);
             }}
         </style>
     </head>
     <body>
-        <div class="header">CORE PILLARS OF RAJASTHAN RAS MENTORSHIP</div>
-        <div class="date">DATE: {datetime.now().strftime('%d %B %Y')}</div>
         <div class="container">
-            <div class="card">
-                <div class="icon">🏫</div>
-                <div class="card-header classes-h">CLASSES</div>
-                <div class="content">
-                    <h3>CLASSES 1, 2, 3</h3>
+            <header>
+                <div class="logo-area"><h1>CORE PILLARS</h1></div>
+                <div style="font-size: 18px; color: #00d2ff;">DATE: {datetime.now().strftime('%d %b %Y')}</div>
+            </header>
+            
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header cls-h">CLASSES</div>
+                    <h3>DAILY FOCUS</h3>
                     <ul>{classes_html}</ul>
                 </div>
-            </div>
-            <div class="card">
-                <div class="icon">🔄</div>
-                <div class="card-header revision-h">REVISION</div>
-                <div class="content">
-                    <h3>DAILY REVISION</h3>
+
+                <div class="card">
+                    <div class="card-header rev-h">REVISION</div>
+                    <h3>SPACED REP</h3>
                     <ul>{revisions_html}</ul>
                 </div>
-            </div>
-            <div class="card">
-                <div class="icon">🔍</div>
-                <div class="card-header pyq-h">PYQ TEST</div>
-                <div class="content">
-                    <h3>1. PYQ test</h3>
+
+                <div class="card">
+                    <div class="card-header pyq-h">PYQ TEST</div>
+                    <h3>ASSESSMENT</h3>
+                    <ul>{pyq_topics_html}</ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header mock-h">MOCK TEST</div>
+                    <h3>STRENGTHEN</h3>
                     <ul>{pyq_topics_html}</ul>
                 </div>
             </div>
-            <div class="card">
-                <div class="icon">⏱️</div>
-                <div class="card-header mock-h">MOCK TESTS</div>
-                <div class="content">
-                    <h3>2. MCQ Test</h3>
-                    <ul><li>(LAST Day Subjects:- Topics)</li></ul>
-                </div>
-            </div>
+            <div class="footer-tag">AIR-01 RAS MENTORSHIP | DYNAMIC ROADMAP</div>
         </div>
-        <div class="footer">Designing Your Path to RAJASTHAN RAS</div>
     </body>
     </html>
     """
     
-    # Generate Image
-    hti.screenshot(html_str=html_content, save_as='Pillar_Schedule.png', size=(1280, 720))
+    # Generate Image with dynamic height handling
+    hti.screenshot(html_str=html_content, save_as='Pillar_Schedule.png', size=(1280, 800))
     return os.path.join(BASE_DIR, "Pillar_Schedule.png")
