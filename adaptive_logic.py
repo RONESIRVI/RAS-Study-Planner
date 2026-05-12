@@ -75,24 +75,22 @@ def get_adaptive_tasks():
         status = str(row[col_map['status']]).strip().lower() if col_map['status'] < len(row) and row[col_map['status']] else ""
         
         # 1. Classes Logic (Limit to 2)
-        # Weekdays: Focus on History. Weekends: Focus on other subjects.
+        # Sequence is critical. We pick the first 2 pending topics in order.
         is_history = "इतिहास" in section
         is_weekend = today.weekday() >= 5
         
-        # Priority Logic
-        should_show = False
-        if is_weekend and not is_history: should_show = True # Weekend priority: Non-history
-        if not is_weekend and is_history: should_show = True # Weekday priority: History
+        # Priority: On weekdays show History, on weekends show others.
+        # But NEVER skip a pending topic if it matches the day's priority.
+        match_priority = (not is_weekend and is_history) or (is_weekend and not is_history)
         
-        # Fallback: If we have space in classes_list, and the item isn't 'done', include it 
-        # but only after we've checked for priorities.
         if status != "done" and len(classes_list) < 2:
-            if should_show:
+            if match_priority:
                 classes_list.append({'subject': section, 'topic': topic})
                 revisions.append({'subject': section, 'topic': f"{topic} (Same Day Rev)"})
-            elif not any(is_history == ("इतिहास" in s['subject']) for s in classes_list):
-                # Small fallback to keep list populated if priorities don't match
-                pass 
+            elif not any(is_history == ("इतिहास" in s['subject']) for s in classes_list) and len(classes_list) == 0:
+                # Fallback if the priority subject is not found at all, pick the next available
+                classes_list.append({'subject': section, 'topic': topic})
+                revisions.append({'subject': section, 'topic': f"{topic} (Same Day Rev)"})
             
         # 2. Spaced Repetition (ALWAYS RUNS for all subjects)
         for r_key, label in [('r1_date', 'R1'), ('r2_date', 'R2')]:
