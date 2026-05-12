@@ -80,30 +80,43 @@ def get_adaptive_tasks():
         if 'study date' in h: col_map['study_date'] = i
         if 'r1 date' in h: col_map['r1_date'] = i
 
-    for row in sheet.iter_rows(min_row=header_row + 1, values_only=True):
-        if not row or len(row) < 2: continue
-        
-        # Safe access to columns
-        def get_val(idx):
-            return str(row[idx]).strip() if idx < len(row) and row[idx] is not None else ""
+    # Re-calculate indices safely
+    topic_idx = 1
+    section_idx = 0
+    status_idx = 13
+    
+    for i, h in enumerate(headers):
+        h_str = str(h).lower()
+        if 'विषय' in h_str: section_idx = i
+        if 'topic' in h_str: topic_idx = i
+        if 'status' in h_str: status_idx = i
 
-        section = get_val(col_map['section'])
-        topic = get_val(col_map['topic'])
-        status = get_val(col_map['status']).lower()
+    print(f"DEBUG: Using Indices - Section:{section_idx}, Topic:{topic_idx}, Status:{status_idx}")
+
+    count = 0
+    for row_idx, row in enumerate(sheet.iter_rows(min_row=4, values_only=True), 4):
+        if not row or len(row) <= max(section_idx, topic_idx): continue
         
-        if not topic or status == "done": continue
+        section = str(row[section_idx]).strip() if row[section_idx] is not None else ""
+        topic = str(row[topic_idx]).strip() if row[topic_idx] is not None else ""
+        status = str(row[status_idx]).strip().lower() if status_idx < len(row) and row[status_idx] is not None else ""
         
-        # Pick the first 2 available topics
-        if len(classes_list) < 2:
+        if topic and status != "done" and len(classes_list) < 2:
+            print(f"DEBUG: Found pending topic at Row {row_idx}: {topic}")
             classes_list.append({'subject': section, 'topic': topic})
             revisions.append({'subject': section, 'topic': f"{topic} (Same Day Rev)"})
+            count += 1
             
         # 2. Spaced Repetition (ALWAYS RUNS for all subjects)
         for r_key, label in [('r1_date', 'R1'), ('r2_date', 'R2')]:
-            r_val = row[col_map.get(r_key)] if col_map.get(r_key) and col_map[r_key] < len(row) else None
-            r_date = r_val.date() if isinstance(r_val, datetime) else r_val
-            if r_date == today:
-                revisions.append({'subject': section, 'topic': f"{topic} ({label})"})
+            rev_date = row[col_map[r_key]] if r_key in col_map and col_map[r_key] < len(row) else None
+            if rev_date and isinstance(rev_date, datetime) and rev_date.date() == today:
+                rev_done_key = f"{r_key.split('_')[0]}_done"
+                rev_status = str(row[col_map[rev_done_key]]).strip().lower() if rev_done_key in col_map and col_map[rev_done_key] < len(row) else ""
+                if rev_status != "done":
+                    revisions.append({'subject': section, 'topic': f"{topic} ({label})"})
+            
+    print(f"DEBUG: Total classes added: {len(classes_list)}")
 
     # Format topic for image display (Keep separate)
     def get_c(idx):
