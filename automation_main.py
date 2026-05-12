@@ -1,13 +1,27 @@
 import os
+import sys
+import json
 from datetime import datetime
+
+# Fix for Windows Unicode issues
+if sys.stdout.encoding != 'utf-8':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except:
+        pass
+
 import image_generator
 import adaptive_logic
 import excel_generator
 import mailer
-import json
 
-CONFIG_FILE = 'config.json'
-# 2. If on Local PC, search multiple locations
+# Configuration and Data Paths
+POSSIBLE_CONFIGS = [
+    'config.json',
+    r'R:\Study_Automation_System\config.json',
+    r'C:\Users\jlpms\OneDrive\Desktop\राजस्थान का इतिहास\Study_Automation\config.json'
+]
+
 search_paths = [
     os.path.join("data", "Master_Tracker_Live.xlsx"),
     "Master_Tracker_Live.xlsx",
