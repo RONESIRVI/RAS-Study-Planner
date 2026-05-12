@@ -43,7 +43,7 @@ def create_pillar_schedule_image(tasks_data):
     <head>
         <meta charset="UTF-8">
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Outfit:wght@300;600&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;600&family=Noto+Sans+Devanagari:wght@400;700&display=swap');
             
             :root {{
                 --bg-gradient: radial-gradient(circle at 10% 20%, rgb(15, 15, 30) 0%, rgb(8, 23, 44) 90.1%);
@@ -58,7 +58,8 @@ def create_pillar_schedule_image(tasks_data):
                 width: 1200px;
                 min-height: 675px;
                 background: var(--bg-gradient);
-                font-family: 'Outfit', sans-serif;
+                /* Prioritize Noto, then fallback to Windows Standard Hindi Fonts */
+                font-family: 'Outfit', 'Noto Sans Devanagari', 'Mangal', 'Arial Unicode MS', 'Nirmala UI', sans-serif;
                 color: white;
                 position: relative;
             }}
