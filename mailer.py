@@ -7,7 +7,11 @@ from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 
 CONFIG_FILE = 'config.json'
-LOCAL_CONFIG = r'C:\Users\jlpms\OneDrive\Desktop\राजस्थान का इतिहास\Study_Automation\config.json'
+POSSIBLE_CONFIGS = [
+    'config.json',
+    r'R:\Study_Automation_System\config.json',
+    r'C:\Users\jlpms\OneDrive\Desktop\राजस्थान का इतिहास\Study_Automation\config.json'
+]
 
 def send_schedule_email(attachment_paths, recipient_email):
     # Try getting from Environment (GitHub)
@@ -19,7 +23,11 @@ def send_schedule_email(attachment_paths, recipient_email):
         recipient_email = "figuring.cse@gmail.com"
     
     # Fallback to local config if not on Cloud
-    config_to_use = CONFIG_FILE if os.path.exists(CONFIG_FILE) else (LOCAL_CONFIG if os.path.exists(LOCAL_CONFIG) else None)
+    config_to_use = None
+    for p in POSSIBLE_CONFIGS:
+        if os.path.exists(p):
+            config_to_use = p
+            break
     if not sender_email and config_to_use:
         with open(config_to_use, 'r') as f:
             config = json.load(f)
@@ -63,11 +71,16 @@ def send_schedule_email(attachment_paths, recipient_email):
 
     # Send Email
     try:
+        print(f"Connecting to SMTP server...")
         server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.ehlo()
         server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
         server.quit()
-        print(f"Email sent successfully to {recipient_email}")
+        print(f"✅ Email successfully sent to {recipient_email}")
     except Exception as e:
-        print(f"Error sending email: {e}")
+        print(f"❌ SMTP Error: {e}")
+        if "Authentication failed" in str(e):
+            print("   TIP: Check your App Password in config.json. It must be a 16-character code.")
+        raise e

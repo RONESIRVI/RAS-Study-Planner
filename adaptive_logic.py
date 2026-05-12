@@ -2,7 +2,7 @@ import openpyxl
 import os
 import glob
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 SHEET_ID = "1Zo81TfPcU09ErH7g-bj-4TksqceuBmiL"
 DOWNLOAD_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=xlsx"
@@ -38,6 +38,7 @@ def get_tracker_path():
     return found[0] if found else target_path
 
 def get_adaptive_tasks():
+    today = datetime.now().date()
     tracker_file = get_tracker_path()
     wb = openpyxl.load_workbook(tracker_file, data_only=True, read_only=True)
     sheet = wb['📋 Master Tracker']
@@ -74,13 +75,8 @@ def get_adaptive_tasks():
         status = str(row[col_map['status']]).strip().lower() if col_map['status'] < len(row) and row[col_map['status']] else ""
         
         # 1. Classes Logic (Limit to 2)
-        # Apply WEEKDAY/WEEKEND Filter ONLY to New Classes
-        is_history = "इतिहास" in section
-        show_in_classes = True
-        if is_weekend and is_history: show_in_classes = False
-        if not is_weekend and not is_history and section != "": show_in_classes = False
-        
-        if status != "done" and len(classes_list) < 2 and show_in_classes: 
+        # Simply pick the next available 'Pending' tasks
+        if status != "done" and len(classes_list) < 2: 
             classes_list.append({'subject': section, 'topic': topic})
             # Add to same-day revision
             revisions.append({'subject': section, 'topic': f"{topic} (Same Day Rev)"})
@@ -88,7 +84,8 @@ def get_adaptive_tasks():
         # 2. Spaced Repetition (ALWAYS RUNS for all subjects)
         for r_key, label in [('r1_date', 'R1'), ('r2_date', 'R2')]:
             r_val = row[col_map.get(r_key)] if col_map.get(r_key) and col_map[r_key] < len(row) else None
-            if isinstance(r_val, datetime) and r_val.date() == today:
+            r_date = r_val.date() if isinstance(r_val, datetime) else r_val
+            if r_date == today:
                 revisions.append({'subject': section, 'topic': f"{topic} ({label})"})
 
     # Format topic for image display (Keep separate)

@@ -7,62 +7,82 @@ import mailer
 import json
 
 CONFIG_FILE = 'config.json'
-LOCAL_CONFIG = r'C:\Users\jlpms\OneDrive\Desktop\राजस्थान का इतिहास\Study_Automation\config.json'
-ALT_CONFIG = os.path.join('..', 'राजस्थान का इतिहास', 'Study_Automation', 'config.json')
+# 2. If on Local PC, search multiple locations
+search_paths = [
+    os.path.join("data", "Master_Tracker_Live.xlsx"),
+    "Master_Tracker_Live.xlsx",
+    r'R:\Study_Automation_System\data\Master_Tracker_Live.xlsx',
+    r'C:\Users\jlpms\OneDrive\Desktop\राजस्थान का इतिहास\📋 Master Tracker\Master Tracker RAS.xlsx'
+]
 
 def run_adaptive_automation():
-    print(f"Starting Adaptive Study Automation at {datetime.now()}")
+    print(f"\n--- Starting Adaptive Study Automation at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ---")
     
     # 1. Get Adaptive Data
     try:
         tasks, assigned_topics = adaptive_logic.get_adaptive_tasks()
+        print(f"✅ Data fetched: {len(assigned_topics)} classes and {len(tasks[2]['revisions'])} revisions found.")
     except Exception as e:
-        print(f"Error in adaptive logic: {e}")
+        print(f"❌ Error in adaptive logic: {e}")
         return
 
     # 2. Determine Mode
     is_weekend = datetime.now().weekday() >= 5
     mode = "Weekly" if is_weekend else "Daily"
+    print(f"Mode: {mode}")
     
     # 3. Generate Schedule Image
     attachments = []
     try:
+        print("Generating schedule image...")
         image_path = image_generator.create_pillar_schedule_image(tasks_data=tasks)
-        attachments.append(image_path)
+        if image_path and os.path.exists(image_path):
+            attachments.append(image_path)
+            print(f"✅ Image generated: {image_path}")
+        else:
+            print("⚠️ Image generation returned no path or file missing.")
     except Exception as e:
-        print(f"Error generating image: {e}")
+        print(f"❌ Error generating image: {e}")
 
     # 4. Generate PYQ Excel for today's classes
+    print(f"Generating PYQ Excel files for {len(assigned_topics)} topics...")
     for c_item in assigned_topics:
         try:
             topic_name = c_item.get('topic', '')
+            if not topic_name: continue
             excel_path = excel_generator.generate_topic_excel(topic_name)
-            if excel_path: attachments.append(excel_path)
+            if excel_path and os.path.exists(excel_path):
+                attachments.append(excel_path)
+                print(f"✅ Excel generated for: {topic_name}")
+            else:
+                print(f"ℹ️ No PYQ found for topic: {topic_name}")
         except Exception as e:
-            pass
+            print(f"⚠️ Error generating Excel for {c_item.get('topic')}: {e}")
 
     # 5. Send Email
     try:
         recipient = os.environ.get("RECIPIENT_EMAIL", "figuring.cse@gmail.com")
-        if not recipient or recipient.strip() == "":
-            recipient = "figuring.cse@gmail.com"
         
-        # Override with config if available (Local only)
-        if os.environ.get("GITHUB_ACTIONS") is None:
-            config_to_use = None
-            for path in [CONFIG_FILE, ALT_CONFIG, LOCAL_CONFIG]:
-                if path and os.path.exists(path):
-                    config_to_use = path
-                    break
-            if config_to_use:
-                with open(config_to_use, 'r') as f:
-                    config = json.load(f)
-                    recipient = config.get("recipient_email", recipient)
+        # Priority 1: Check Local config (R:, C: or current dir)
+        config_to_use = None
+        for path in POSSIBLE_CONFIGS:
+            if path and os.path.exists(path):
+                config_to_use = path
+                break
         
+        if config_to_use:
+            print(f"Using config from: {config_to_use}")
+            with open(config_to_use, 'r') as f:
+                config = json.load(f)
+                recipient = config.get("recipient_email", recipient)
+        else:
+            print("⚠️ No config.json found. Using environment variables or defaults.")
+
+        print(f"Preparing to send email to {recipient} with {len(attachments)} attachments...")
         mailer.send_schedule_email(attachments, recipient)
-        print(f"Success: Adaptive plan and Excel files sent to {recipient}.")
+        print(f"🎉 Success: All tasks completed.")
     except Exception as e:
-        print(f"Error in automation: {e}")
+        print(f"❌ Critical error in automation pipeline: {e}")
 
 if __name__ == "__main__":
     run_adaptive_automation()
