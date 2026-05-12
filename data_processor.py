@@ -9,7 +9,7 @@ TRACKER_FILE = glob.glob(os.path.join(TRACKER_DIR, "*Master Tracker RAS.xlsx"))[
 
 def get_tasks_for_today():
     wb = openpyxl.load_workbook(TRACKER_FILE, data_only=True)
-    sheet = wb['📋 Master Tracker']
+    sheet = wb[' Master Tracker']
     
     today = datetime.now().date()
     tasks = []
