@@ -5,7 +5,10 @@ from datetime import datetime
 # Directory for automation
 BASE_DIR = "output"
 os.makedirs(BASE_DIR, exist_ok=True)
-hti = Html2Image(output_path=BASE_DIR)
+if os.environ.get("GITHUB_ACTIONS"):
+    hti = Html2Image(output_path=BASE_DIR, custom_flags=['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--headless'])
+else:
+    hti = Html2Image(output_path=BASE_DIR)
 
 def create_pillar_schedule_image(tasks_data):
     # Prepare Content

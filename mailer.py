@@ -41,8 +41,16 @@ def send_schedule_email(attachment_paths, recipient_email):
     msg.attach(MIMEText(body, 'plain'))
 
     # Attach Files
+    print(f"Total attachments to process: {len(attachment_paths)}")
     for path in attachment_paths:
-        if not path or not os.path.exists(path): continue
+        if not path:
+            print("Skipping empty attachment path")
+            continue
+        if not os.path.exists(path):
+            print(f"Error: Attachment file not found at {os.path.abspath(path)}")
+            continue
+        
+        print(f"Attaching file: {path}")
         with open(path, 'rb') as f:
             file_data = f.read()
             if path.endswith('.png'):
