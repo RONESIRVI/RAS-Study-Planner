@@ -48,13 +48,17 @@ def get_adaptive_tasks():
     
     print(f"DEBUG: Found headers in Excel: {headers}")
     
-    col_map = {'section': 0, 'topic': 1, 'status': 13, 'comp_date': 14, 'next_action': 15}
+    col_map = {'section': 0, 'topic': 1, 'status': 12, 'comp_date': 13, 'next_action': 14}
     for i, h in enumerate(headers):
         if not h: continue
-        if any(x in h for x in ['विषय', 'section', 'subject']): col_map['section'] = i
-        if any(x in h for x in ['topic', 'अध्याय', 'पाठ', 'शीर्षक', 'विवरण']): col_map['topic'] = i
+        # Priority mapping
+        if h == 'topic': col_map['topic'] = i; continue
+        if h == 'विषय': col_map['section'] = i; continue
+        
+        if any(x in h for x in ['विषय', 'section', 'subject']) and 'important' not in h: col_map['section'] = i
+        if any(x in h for x in ['topic', 'अध्याय', 'पाठ']) and 'important' not in h: col_map['topic'] = i
         if any(x in h for x in ['status', 'स्थिति']): col_map['status'] = i
-        if any(x in h for x in ['completion', 'पूर्ण', 'तारीख']): col_map['comp_date'] = i
+        if any(x in h for x in ['completion', 'पूर्ण', 't_date']): col_map['comp_date'] = i
         if any(x in h for x in ['next action', 'अगला']): col_map['next_action'] = i
     
     print(f"DEBUG: Final Column Mapping: {col_map}")
