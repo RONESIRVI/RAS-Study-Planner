@@ -75,11 +75,24 @@ def get_adaptive_tasks():
         status = str(row[col_map['status']]).strip().lower() if col_map['status'] < len(row) and row[col_map['status']] else ""
         
         # 1. Classes Logic (Limit to 2)
-        # Simply pick the next available 'Pending' tasks
-        if status != "done" and len(classes_list) < 2: 
-            classes_list.append({'subject': section, 'topic': topic})
-            # Add to same-day revision
-            revisions.append({'subject': section, 'topic': f"{topic} (Same Day Rev)"})
+        # Weekdays: Focus on History. Weekends: Focus on other subjects.
+        is_history = "इतिहास" in section
+        is_weekend = today.weekday() >= 5
+        
+        # Priority Logic
+        should_show = False
+        if is_weekend and not is_history: should_show = True # Weekend priority: Non-history
+        if not is_weekend and is_history: should_show = True # Weekday priority: History
+        
+        # Fallback: If we have space in classes_list, and the item isn't 'done', include it 
+        # but only after we've checked for priorities.
+        if status != "done" and len(classes_list) < 2:
+            if should_show:
+                classes_list.append({'subject': section, 'topic': topic})
+                revisions.append({'subject': section, 'topic': f"{topic} (Same Day Rev)"})
+            elif not any(is_history == ("इतिहास" in s['subject']) for s in classes_list):
+                # Small fallback to keep list populated if priorities don't match
+                pass 
             
         # 2. Spaced Repetition (ALWAYS RUNS for all subjects)
         for r_key, label in [('r1_date', 'R1'), ('r2_date', 'R2')]:
@@ -100,3 +113,31 @@ def get_adaptive_tasks():
         {'sr': 4, 'task': 'Analysis', 'subject': 'PYQ Review', 'topic': 'Previous Year Questions Analysis'}
     ]
     return image_data, classes_list
+
+def get_weekly_roadmap():
+    """Generates a list of the next 14 topics for a 7-day projection."""
+    tracker_file = get_tracker_path()
+    wb = openpyxl.load_workbook(tracker_file, data_only=True, read_only=True)
+    sheet = wb['📋 Master Tracker']
+    
+    header_row = 3
+    # Use the same logic as get_adaptive_tasks to find topics
+    all_headers = list(sheet.iter_rows(min_row=header_row, max_row=header_row, values_only=True))[0]
+    headers = [str(c).lower().strip() if c else "" for c in all_headers]
+    
+    col_map = {'section': 0, 'topic': 1, 'status': 13}
+    for i, h in enumerate(headers):
+        if not h: continue
+        if h == 'topic': col_map['topic'] = i
+        if 'विषय' in h: col_map['section'] = i
+        if 'status' in h: col_map['status'] = i
+
+    roadmap = []
+    for row in sheet.iter_rows(min_row=header_row + 1, values_only=True):
+        status = str(row[col_map['status']]).strip().lower() if col_map['status'] < len(row) and row[col_map['status']] else ""
+        if status != "done" and len(roadmap) < 14:
+            section = str(row[col_map['section']]).strip() if row[col_map['section']] else ""
+            topic = str(row[col_map['topic']]).strip() if row[col_map['topic']] else ""
+            if topic: roadmap.append(f"{section}: {topic}")
+    
+    return roadmap

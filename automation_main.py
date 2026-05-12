@@ -93,7 +93,18 @@ def run_adaptive_automation():
             print("⚠️ No config.json found. Using environment variables or defaults.")
 
         print(f"Preparing to send email to {recipient} with {len(attachments)} attachments...")
-        mailer.send_schedule_email(attachments, recipient)
+        
+        # Weekly Roadmap Logic (Trigger on Sundays)
+        weekly_msg = ""
+        if datetime.now().weekday() == 6: # Sunday
+            roadmap = adaptive_logic.get_weekly_roadmap()
+            weekly_msg = "\n\n🚀 --- UPCOMING WEEKLY ROADMAP ---\n"
+            for i, item in enumerate(roadmap, 1):
+                day_num = (i + 1) // 2
+                if i % 2 != 0: weekly_msg += f"\nDay {day_num}:\n"
+                weekly_msg += f"  - {item}\n"
+        
+        mailer.send_schedule_email(attachments, recipient, extra_msg=weekly_msg)
         print(f"🎉 Success: All tasks completed.")
     except Exception as e:
         print(f"❌ Critical error in automation pipeline: {e}")

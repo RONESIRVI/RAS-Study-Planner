@@ -13,8 +13,8 @@ POSSIBLE_CONFIGS = [
     r'C:\Users\jlpms\OneDrive\Desktop\राजस्थान का इतिहास\Study_Automation\config.json'
 ]
 
-def send_schedule_email(attachment_paths, recipient_email):
-    # Try getting from Environment (GitHub)
+def send_schedule_email(attachment_paths, recipient_email, extra_msg=""):
+    # ... (rest of function signature and setup)
     sender_email = os.environ.get("SENDER_EMAIL")
     sender_password = os.environ.get("SENDER_PASSWORD")
     recipient_email = os.environ.get("RECIPIENT_EMAIL", recipient_email)
@@ -45,7 +45,7 @@ def send_schedule_email(attachment_paths, recipient_email):
     msg['To'] = recipient_email
     msg['Subject'] = f"RAS Adaptive Study Plan - {datetime.now().strftime('%d %b')}"
 
-    body = "Attached is your RAS Adaptive Study Plan and Today's PYQ Excel.\n\nKeep going! 'LEAD' (Learn, Engage, Adapt, Deliver)"
+    body = f"Attached is your RAS Adaptive Study Plan and Today's PYQ Excel.\n\nKeep going! 'LEAD' (Learn, Engage, Adapt, Deliver){extra_msg}"
     msg.attach(MIMEText(body, 'plain'))
 
     # Attach Files
