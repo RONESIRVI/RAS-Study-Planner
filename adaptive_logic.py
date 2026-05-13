@@ -10,16 +10,14 @@ DOWNLOAD_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format
 def get_tracker_path():
     target_path = os.path.join("data", "Master_Tracker_Live.xlsx")
     os.makedirs("data", exist_ok=True)
-    print("DEBUG: Cloud Sync -> Downloading latest from Google Drive...")
     try:
         r = requests.get(DOWNLOAD_URL, timeout=15)
         if r.status_code == 200:
             with open(target_path, "wb") as f:
                 f.write(r.content)
-            print("DEBUG: Download Success!")
             return target_path
     except:
-        print("DEBUG: Download Failed. Using local fallback.")
+        pass
     return target_path
 
 def get_adaptive_tasks():
@@ -29,56 +27,47 @@ def get_adaptive_tasks():
     sheet_names = wb.sheetnames
     
     # 1. Main Sheet
-    main_sheet_name = next((s for s in ['Master Tracker', 'Master Tracker'] if s in sheet_names), sheet_names[0])
-    sheet = wb[main_sheet_name]
-    
-    header_row = 3
-    all_headers = list(sheet.iter_rows(min_row=header_row, max_row=header_row, values_only=True))
-    if not all_headers: return [], []
-    headers = [str(c).lower().strip() if c else "" for c in all_headers[0]]
-    
-    col_map = {'section': 0, 'topic': 1, 'Action: 13}
-    for i, h in enumerate(headers):
-        if 'विषय' in h: col_map['section'] = i
-        if 'topic' in h: col_map['topic'] = i
-        if 'Action' in h: col_map['action] = i
-
+    main_sheet = next((s for s in ['📋 Master Tracker', 'Master Tracker'] if s in sheet_names), sheet_names[0])
+    ws = wb[main_sheet]
     classes_list, revisions = [], []
-    print("-" * 50)
-    print(f"MASTER DEBUG: Scanning rows in {main_sheet_name}...")
+    for row in ws.iter_rows(min_row=4, max_row=200, values_only=True):
+        if not row or len(row) < 14: continue
+        if row[1] and str(row[13]).strip().lower() != "done" and len(classes_list) < 2:
+            classes_list.append({'subject': str(row[0]), 'topic': str(row[1])})
+            revisions.append({'subject': str(row[0]), 'topic': f"{row[1]} (Same Day Rev)"})
 
-    for row in sheet.iter_rows(min_row=4, max_row=200, values_only=True):
-        if not row: continue
-        topic = str(row[col_map['topic']]).strip() if col_map['topic'] < len(row) and row[col_map['topic']] else ""
-        action = str(row[col_map['action]]).strip().lower() if col_map['action'] < len(row) and row[col_map['Action']] else ""
-        section = str(row[col_map['section']]).strip() if col_map['section'] < len(row) and row[col_map['section']] else ""
-        
-        if topic and action != "done" and len(classes_list) < 2:
-            print(f"Row: {topic[:20]}... -> [PICKED]")
-            classes_list.append({'subject': section, 'topic': topic})
-            revisions.append({'subject': section, 'topic': f"{topic} (Same Day Rev)"})
-
-    # 2. Revision Planner
-    if 'Revision Planner' in sheet_names:
-        rev_sheet = wb['Revision Planner']
-        for row in rev_sheet.iter_rows(min_row=2, max_row=200, values_only=True):
-            if not row or len(row) < 2: continue
-            sub = str(row[0]).strip() if row[0] else "Revision"
-            top = str(row[1]).strip() if row[1] else ""
-            if not top: continue
+    # 2. Smart Revision Search
+    rev_sheet_name = next((s for s in sheet_names if 'revision' in s.lower()), None)
+    if rev_sheet_name:
+        # Avoid printing sheet name directly if it has emojis
+        print(f"DEBUG: Found Revision Sheet.")
+        rev_ws = wb[rev_sheet_name]
+        for row in rev_ws.iter_rows(min_row=4, max_row=200, values_only=True):
+            if not row or len(row) < 5: continue
+            sub, top = str(row[0]), str(row[1])
+            if not top or top == "None": continue
             
-            for cell_val in row[2:]:
-                if isinstance(cell_val, datetime) and cell_val.date() == today:
-                    revisions.append({'subject': sub, 'topic': f"{top} (Rotation)"})
-                    break
+            for d_idx in [3, 5, 7, 9, 11]:
+                if d_idx >= len(row): continue
+                raw_val = row[d_idx]
+                parsed_date = None
+                if isinstance(raw_val, datetime): parsed_date = raw_val.date()
+                elif isinstance(raw_val, str) and "/" in raw_val:
+                    for fmt in ["%d/%m/%Y", "%m/%d/%Y"]:
+                        try:
+                            parsed_date = datetime.strptime(raw_val.strip(), fmt).date()
+                            break
+                        except: pass
+                
+                if parsed_date == today:
+                    done_val = str(row[d_idx+1]).strip().lower() if d_idx+1 < len(row) else ""
+                    if done_val != "done":
+                        label = f"R{(d_idx-1)//2}" if d_idx < 11 else "Final"
+                        revisions.append({'subject': sub, 'topic': f"{top} ({label})"})
 
-    print("-" * 50)
-    
-    # Prepare Image Data
     image_data = []
     for idx, c in enumerate(classes_list):
         image_data.append({'sr': idx+1, 'task': f'CLASSES {idx+1}', 'subject': c['subject'], 'topic': c['topic']})
-    
     image_data.append({'sr': len(image_data)+1, 'task': 'REVISION', 'revisions': revisions})
     image_data.append({'sr': len(image_data)+1, 'task': 'Analysis', 'subject': 'PYQ Review', 'topic': 'Previous Year Questions Analysis'})
     

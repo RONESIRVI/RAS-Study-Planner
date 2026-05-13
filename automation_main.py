@@ -25,7 +25,7 @@ def run_automation():
         print(f"Generating PYQ Excel files for {len(classes_list)} topics...")
         pyq_files = []
         for task in classes_list:
-            pyq_file = excel_generator.generate_pyq_excel(task['topic'])
+            pyq_file = excel_generator.generate_topic_excel(task['topic'])
             if pyq_file:
                 pyq_files.append(pyq_file)
         
