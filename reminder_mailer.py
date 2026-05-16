@@ -16,11 +16,49 @@ def load_config():
 
 def send_evening_reminder():
     config = load_config()
+    now = datetime.now()
+    current_day = now.strftime('%A')
+    is_weekend = current_day in ['Saturday', 'Sunday']
     
+    if is_weekend:
+        scheduled_time = config.get("weekend_evening_time", "02:30")
+    else:
+        scheduled_time = config.get("weekday_evening_time", "21:30")
+        
+    weekend_mode = config.get("weekend_mode", True)
+
+    print(f"--- Starting Evening Reminder at {now.strftime('%Y-%m-%d %H:%M:%S')} ---")
+    print(f"Scheduled Time: {scheduled_time} | Weekend Mode: {'ON' if weekend_mode else 'OFF'}")
+
     msg = MIMEMultipart()
     msg['From'] = config['sender_email']
     msg['To'] = config['recipient_email']
-    msg['Subject'] = f"📊 Daily Progress Report - {datetime.now().strftime('%d %b %Y')}"
+    
+    if weekend_mode and is_weekend:
+        msg['Subject'] = f"🕯️ Weekend Reflection - {now.strftime('%d %b %Y')}"
+        title = "Weekend Reflection"
+        message_body = """
+        <p>नमस्ते,</p>
+        <p>आज वीकेंड है, आशा है कि आपने अपनी पढ़ाई का रिवीज़न (Revision) अच्छे से किया होगा।</p>
+        <p><b>वीकेंड टास्क:</b></p>
+        <p>1. पिछले सप्ताह के छूटे हुए टॉपिक्स (Backlogs) को चेक करें।<br>
+        2. अगले सप्ताह के लिए अपनी ऊर्जा संचित करें।<br>
+        3. अपनी <b>Master Tracker Sheet</b> में प्रोग्रेस अपडेट कर दें।</p>
+        <div style="margin: 30px 0; padding: 20px; background: #f8fafc; border-left: 4px solid #f59e0b; border-radius: 4px;">
+            <i>"तैयारी करने में विफल रहने का मतलब है विफल होने की तैयारी करना।"</i>
+        </div>
+        """
+    else:
+        msg['Subject'] = f"📊 Daily Progress Report - {now.strftime('%d %b %Y')}"
+        title = "Daily Milestone Review"
+        message_body = """
+        <p>नमस्ते,</p>
+        <p>आशा है कि आज का आपका अध्ययन (Study Session) फलदायी रहा होगा।</p>
+        <p>कृपया अपनी <b>Master Tracker Sheet</b> में आज के कार्यों का स्टेटस (उन्हें <b>'done'</b> मार्क करना न भूलें.) अपडेट कर दें।</p>
+        <div style="margin: 30px 0; padding: 20px; background: #f8fafc; border-left: 4px solid #00d2ff; border-radius: 4px;">
+            <i>"अनुशासन ही लक्ष्य और उपलब्धि के बीच का पुल है।"</i>
+        </div>
+        """
 
     # Professional HTML Body
     html_content = f"""
@@ -28,18 +66,10 @@ def send_evening_reminder():
     <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333;">
         <div style="max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden;">
             <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 30px; text-align: center; color: white;">
-                <h1 style="margin: 0; font-size: 24px; letter-spacing: 1px;">Daily Milestone Review</h1>
+                <h1 style="margin: 0; font-size: 24px; letter-spacing: 1px;">{title}</h1>
             </div>
             <div style="padding: 40px; background: #ffffff;">
-                <p>नमस्ते,</p>
-                <p>आशा है कि आज का आपका अध्ययन (Study Session) फलदायी रहा होगा।</p>
-                <p style="font-size: 16px;"><b>दिन का अंतिम कार्य:</b></p>
-                <p>कृपया अपनी <b>Master Tracker Sheet</b> में आज के कार्यों का स्टेटस (Status) अपडेट कर दें। यदि आपने आज के टॉपिक्स पूरे कर लिए हैं, तो उन्हें <b>'done'</b> मार्क करना न भूलें ताकि कल का नया स्टडी प्लान समय पर जनरेट हो सके।</p>
-                
-                <div style="margin: 30px 0; padding: 20px; background: #f8fafc; border-left: 4px solid #00d2ff; border-radius: 4px;">
-                    <i>"अनुशासन ही लक्ष्य और उपलब्धि के बीच का पुल है।"</i>
-                </div>
-                
+                {message_body}
                 <p>कल के लक्ष्यों के लिए शुभकामनाएं।</p>
                 <br>
                 <p style="margin-bottom: 5px;">सादर,</p>

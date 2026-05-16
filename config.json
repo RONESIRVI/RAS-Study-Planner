@@ -3,5 +3,10 @@
     "sender_password": "lgmhevkrfrpdmetj",
     "smtp_server": "smtp.gmail.com",
     "smtp_port": 587,
-    "recipient_email": "figuring.cse@gmail.com"
+    "recipient_email": "figuring.cse@gmail.com",
+    "weekend_mode": true,
+    "weekday_morning_time": "00:01",
+    "weekday_evening_time": "14:30",
+    "weekend_morning_time": "01:00",
+    "weekend_evening_time": "14:30"
 }

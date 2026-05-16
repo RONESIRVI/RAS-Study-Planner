@@ -7,9 +7,33 @@ import mailer
 from datetime import datetime
 
 def run_automation():
-    print(f"--- Starting Adaptive Study Automation at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ---")
+    # Load config for time and weekend settings
+    config_path = 'config.json'
+    with open(config_path, 'r') as f:
+        config = json.load(f)
+    
+    now = datetime.now()
+    current_day = now.strftime('%A')
+    is_weekend = current_day in ['Saturday', 'Sunday']
+    
+    if is_weekend:
+        scheduled_time = config.get("weekend_morning_time", "01:00")
+    else:
+        scheduled_time = config.get("weekday_morning_time", "08:00")
+    
+    weekend_mode = config.get("weekend_mode", True)
+
+    print(f"--- Starting Adaptive Study Automation at {now.strftime('%Y-%m-%d %H:%M:%S')} ---")
+    print(f"Scheduled Time: {scheduled_time} | Weekend Mode: {'ON' if weekend_mode else 'OFF'}")
     
     try:
+        if weekend_mode and is_weekend:
+            print(f"Today is {current_day} (Weekend). Sending Weekly Review Plan.")
+            custom_subject = f"📅 RAS Weekend Review & Plan - {now.strftime('%d %b %Y')}"
+            extra_msg = "\n\nनोट: आज वीकेंड है! आज का दिन पिछले सप्ताह के विषयों के रिवीज़न और बैकलग (Backlog) क्लियर करने के लिए है।"
+        else:
+            custom_subject = None
+            extra_msg = ""
         # 1. Fetch Adaptive Tasks and Revisions
         image_data, classes_list = adaptive_logic.get_adaptive_tasks()
         
@@ -34,7 +58,7 @@ def run_automation():
         
         # 5. Send Email
         print(f"Preparing to send email with {len(attachments)} attachments...")
-        mailer.send_email(attachments)
+        mailer.send_email(attachments, extra_msg=extra_msg, custom_subject=custom_subject)
         
         print("SUCCESS: All tasks completed.")
         

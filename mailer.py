@@ -14,8 +14,8 @@ POSSIBLE_CONFIGS = [
     r'R:\Study_Automation_System\config.json'
 ]
 
-def send_schedule_email(attachment_paths, recipient_email, extra_msg=""):
-    # Prioritize Environment Variables (GitHub)
+def send_schedule_email(attachment_paths, recipient_email, extra_msg="", custom_subject=None):
+    # ... (Environment variables logic) ...
     sender_email = os.environ.get("SENDER_EMAIL")
     sender_password = os.environ.get("SENDER_PASSWORD")
     recipient_email = os.environ.get("RECIPIENT_EMAIL", recipient_email)
@@ -42,7 +42,11 @@ def send_schedule_email(attachment_paths, recipient_email, extra_msg=""):
     msg = MIMEMultipart()
     msg['From'] = sender_email
     msg['To'] = recipient_email
-    msg['Subject'] = f"RAS Adaptive Study Plan - {datetime.now().strftime('%d %b %Y')}"
+    
+    if custom_subject:
+        msg['Subject'] = custom_subject
+    else:
+        msg['Subject'] = f"RAS Adaptive Study Plan - {datetime.now().strftime('%d %b %Y')}"
 
     body = f"नमस्ते,\n\nआज का आपका RAS स्टडी प्लान और PYQ एक्सेल फाइलें संलग्न हैं।\n\nलक्ष्य की ओर बढ़ते रहें! {extra_msg}\n\nसादर,\nAIR-01 Automation System"
     msg.attach(MIMEText(body, 'plain'))
@@ -72,6 +76,6 @@ def send_schedule_email(attachment_paths, recipient_email, extra_msg=""):
     except Exception as e:
         print(f"❌ SMTP Error: {e}")
 
-def send_email(attachments, extra_msg=""):
+def send_email(attachments, extra_msg="", custom_subject=None):
     # Main entry point for automation_main.py
-    send_schedule_email(attachments, "figuring.cse@gmail.com", extra_msg)
+    send_schedule_email(attachments, "figuring.cse@gmail.com", extra_msg, custom_subject)
