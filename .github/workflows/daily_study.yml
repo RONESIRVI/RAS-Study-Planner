@@ -2,9 +2,8 @@ name: Daily RAS Study Plan
 
 on:
   schedule:
-    - cron: '31 18 * * *'  # 12:01 AM IST (Morning Plan)
-    - cron: '0 23 * * *'   # 04:30 AM IST (Late Morning Plan)
-    - cron: '30 9 * * *'  # 03:00 PM IST (Evening Reminder)
+    - cron: '30 22 * * *'  # 04:00 AM IST (Morning Plan)
+    - cron: '30 7 * * *'   # 01:00 PM IST (Evening Reminder)
   workflow_dispatch:
 
 jobs:
@@ -22,7 +21,7 @@ jobs:
           sudo apt-get install -y google-chrome-stable fonts-indic fonts-noto-core
       
       - name: Morning Run (Plan)
-        if: github.event.schedule == '31 18 * * *' || github.event.schedule == '0 23 * * *' || github.event_name == 'workflow_dispatch'
+        if: github.event.schedule == '30 22 * * *' || github.event_name == 'workflow_dispatch'
         env:
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
           SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
@@ -30,7 +29,7 @@ jobs:
         run: python automation_main.py
 
       - name: Evening Run (Reminder)
-        if: github.event.schedule == '30 9 * * *'
+        if: github.event.schedule == '30 7 * * *'
         env:
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
           SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}

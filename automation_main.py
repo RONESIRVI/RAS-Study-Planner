@@ -17,9 +17,9 @@ def run_automation():
     is_weekend = current_day in ['Saturday', 'Sunday']
     
     if is_weekend:
-        scheduled_time = config.get("weekend_morning_time", "01:00")
+        scheduled_time = config.get("weekend_morning_time", "04:00")
     else:
-        scheduled_time = config.get("weekday_morning_time", "08:00")
+        scheduled_time = config.get("weekday_morning_time", "04:00")
     
     weekend_mode = config.get("weekend_mode", True)
 

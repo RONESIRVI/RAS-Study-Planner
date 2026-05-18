@@ -21,9 +21,9 @@ def send_evening_reminder():
     is_weekend = current_day in ['Saturday', 'Sunday']
     
     if is_weekend:
-        scheduled_time = config.get("weekend_evening_time", "02:30")
+        scheduled_time = config.get("weekend_evening_time", "13:00")
     else:
-        scheduled_time = config.get("weekday_evening_time", "21:30")
+        scheduled_time = config.get("weekday_evening_time", "13:00")
         
     weekend_mode = config.get("weekend_mode", True)
 
@@ -43,7 +43,7 @@ def send_evening_reminder():
         <p><b>वीकेंड टास्क:</b></p>
         <p>1. पिछले सप्ताह के छूटे हुए टॉपिक्स (Backlogs) को चेक करें।<br>
         2. अगले सप्ताह के लिए अपनी ऊर्जा संचित करें।<br>
-        3. अपनी <b>Master Tracker Sheet</b> में प्रोग्रेस अपडेट कर दें।</p>
+        3. अपनी <b>Master Tracker Sheet</b> में आज के कार्यों का स्टेटस (उन्हें <b>'done'</b> मार्क करना न भूलें) अपडेट कर दें।</p>
         <div style="margin: 30px 0; padding: 20px; background: #f8fafc; border-left: 4px solid #f59e0b; border-radius: 4px;">
             <i>"तैयारी करने में विफल रहने का मतलब है विफल होने की तैयारी करना।"</i>
         </div>
