@@ -31,7 +31,7 @@ def send_evening_reminder():
     print(f"Scheduled Time: {scheduled_time} | Weekend Mode: {'ON' if weekend_mode else 'OFF'}")
 
     msg = MIMEMultipart()
-    msg['From'] = config['sender_email']
+    msg['From'] = f"RAS Mentorship Reminder <{config['sender_email']}>"
     msg['To'] = config['recipient_email']
     
     if weekend_mode and is_weekend:

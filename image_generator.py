@@ -1,6 +1,6 @@
 import os
 from html2image import Html2Image
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Directory for automation
 BASE_DIR = "output"
@@ -140,8 +140,8 @@ def create_pillar_schedule_image(tasks_data):
     <body>
         <div class="container">
             <header>
-                <div class="logo-area"><h1>CORE PILLARS</h1></div>
-                <div style="font-size: 18px; color: #00d2ff;">DATE: {datetime.now().strftime('%d %b %Y')}</div>
+                <div class="logo-area"><h1>AIR-01 RAS MENTORSHIP</h1></div>
+                <div style="font-size: 18px; color: #00d2ff;">📅 KAL KA PLAN: {(datetime.now() + timedelta(days=1)).strftime('%d %b %Y')}</div>
             </header>
             
             <div class="grid">
@@ -169,7 +169,7 @@ def create_pillar_schedule_image(tasks_data):
                     <ul>{pyq_topics_html}</ul>
                 </div>
             </div>
-            <div class="footer-tag">AIR-01 RAS MENTORSHIP | DYNAMIC ROADMAP</div>
+            <div class="footer-tag">CORE PILLARS | DYNAMIC ROADMAP</div>
         </div>
     </body>
     </html>

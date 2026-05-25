@@ -40,7 +40,7 @@ def send_schedule_email(attachment_paths, recipient_email, extra_msg="", custom_
 
     # Create Message
     msg = MIMEMultipart()
-    msg['From'] = sender_email
+    msg['From'] = f"RAS Mentorship System <{sender_email}>"
     msg['To'] = recipient_email
     
     if custom_subject:

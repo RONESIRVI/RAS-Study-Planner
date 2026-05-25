@@ -17,6 +17,7 @@ def get_base_paths():
     search_dirs = [
         "data",
         ".",
+        r'R:\Final_PYQ_Output',
         os.path.join("..", "राजस्थान का इतिहास", "Final_PYQ_Output"),
         r'C:\Users\jlpms\OneDrive\Desktop\राजस्थान का इतिहास\Final_PYQ_Output'
     ]
