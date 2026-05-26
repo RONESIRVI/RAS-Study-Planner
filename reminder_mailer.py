@@ -70,9 +70,6 @@ def send_evening_reminder():
             </div>
             <div style="padding: 40px; background: #ffffff;">
                 {message_body}
-                <p>कल के लक्ष्यों के लिए शुभकामनाएं।</p>
-                <br>
-                <p style="margin-bottom: 5px;">सादर,</p>
                 <p style="margin-top: 0; font-weight: bold; color: #00d2ff;">AIR-01 RAS Automation System</p>
             </div>
             <div style="background: #f1f5f9; padding: 15px; text-align: center; font-size: 12px; color: #64748b;">
@@ -91,9 +88,9 @@ def send_evening_reminder():
         server.login(config['sender_email'], config['sender_password'])
         server.send_message(msg)
         server.quit()
-        print("✅ Evening Reminder Sent Successfully!")
+        print("[SUCCESS] Evening Reminder Sent Successfully!")
     except Exception as e:
-        print(f"❌ Failed to send reminder: {e}")
+        print(f"[ERROR] Failed to send reminder: {e}")
 
 if __name__ == "__main__":
     send_evening_reminder()
