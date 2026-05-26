@@ -129,19 +129,14 @@ def create_pillar_schedule_image(tasks_data):
             strong {{ display: block; margin-bottom: 2px; color: #fff; }}
             small {{ font-size: 12px; color: #00d2ff; opacity: 0.8; }}
 
-            .footer-tag {{
-                padding: 40px;
-                text-align: right;
-                font-size: 12px;
-                color: rgba(255, 255, 255, 0.2);
-            }}
+
         </style>
     </head>
     <body>
         <div class="container">
             <header>
                 <div class="logo-area"><h1>AIR-01 RAS MENTORSHIP</h1></div>
-                <div style="font-size: 18px; color: #00d2ff;">📅 KAL KA PLAN: {(datetime.now() + timedelta(days=1)).strftime('%d %b %Y')}</div>
+                <div style="font-size: 18px; color: #00d2ff;">📅 Date : {(datetime.now() + timedelta(days=1)).strftime('%d %b %Y')}</div>
             </header>
             
             <div class="grid">
@@ -169,7 +164,7 @@ def create_pillar_schedule_image(tasks_data):
                     <ul>{pyq_topics_html}</ul>
                 </div>
             </div>
-            <div class="footer-tag">CORE PILLARS | DYNAMIC ROADMAP</div>
+
         </div>
     </body>
     </html>
