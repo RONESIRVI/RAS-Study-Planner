@@ -633,7 +633,7 @@ def history_filter(fpath):
     return "history" in fname or "इतिहास" in fname or "पुरातात्विक" in fname
 
 history_path = consolidate_subject(
-    "Rajasthan History", 
+    "राजस्थान का इतिहास", 
     "A - राजस्थान  RAS", 
     "राजस्थान इतिहास", 
     "राजस्थान इतिहास",
