@@ -200,119 +200,125 @@ def parse_file(file_path, default_subtopic):
     print(f"  Parsing: {os.path.basename(file_path)}")
     try:
         wb = openpyxl.load_workbook(file_path, data_only=True)
-        sheet = wb.active
-        for name in wb.sheetnames:
-            if "प्रश्न" in name or "Questions" in name or "Bank" in name:
-                sheet = wb[name]
-                break
-        rows = list(sheet.iter_rows(values_only=True))
     except Exception as e:
         print(f"  [ERROR] Loading failed: {e}")
         return []
         
-    if not rows: return []
-    
-    q_col, opt1, opt2, opt3, opt4, opts_merged, ans_col, ans_text_col, exp_col, topic_col, subtopic_col = -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-    start_row = 0
-    
-    for idx, r in enumerate(rows[:5]):
-        non_empty_count = sum(1 for c in r if c is not None and str(c).strip() != "")
-        if non_empty_count < 2:
-            continue
+    matching_sheets = []
+    if len(wb.sheetnames) == 1:
+        matching_sheets.append(wb.active)
+    else:
+        for name in wb.sheetnames:
+            if any(k in name for k in ["प्रश्न", "Questions", "Bank", "सभी", "ALL", "प्रश्नोत्तरी"]):
+                matching_sheets.append(wb[name])
+    if not matching_sheets:
+        matching_sheets.append(wb.active)
         
-        q_col, opt1, opt2, opt3, opt4, opts_merged, ans_col, ans_text_col, exp_col, topic_col, subtopic_col = find_column_mappings(r)
-        if q_col != -1 and ans_col != -1:
-            start_row = idx + 1
-            break
+    combined_data = []
+    for sheet in matching_sheets:
+        rows = list(sheet.iter_rows(values_only=True))
+        if not rows: continue
+        
+        q_col, opt1, opt2, opt3, opt4, opts_merged, ans_col, ans_text_col, exp_col, topic_col, subtopic_col = -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+        start_row = 0
+        
+        for idx, r in enumerate(rows[:5]):
+            non_empty_count = sum(1 for c in r if c is not None and str(c).strip() != "")
+            if non_empty_count < 2:
+                continue
+            
+            q_col, opt1, opt2, opt3, opt4, opts_merged, ans_col, ans_text_col, exp_col, topic_col, subtopic_col = find_column_mappings(r)
+            if q_col != -1 and ans_col != -1:
+                start_row = idx + 1
+                break
 
-    if q_col == -1:
-        if len(rows[0]) >= 13:
-            q_col, opt1, opt2, opt3, opt4, ans_col, ans_text_col, exp_col, topic_col, subtopic_col = 3, 4, 5, 6, 7, 8, 9, 10, 1, 2
-            start_row = 3
-        elif len(rows[0]) >= 10:
-            q_col, opt1, opt2, opt3, opt4, ans_col, exp_col, topic_col, subtopic_col = 3, 4, 5, 6, 7, 8, 9, 1, 2
-            start_row = 1
-        elif len(rows[0]) >= 3:
-            q_col, ans_col = 1, 2
-            if len(rows[0]) >= 4: exp_col = 3
-            start_row = 1
-        else:
-            q_col, ans_col = 0, 1
-            start_row = 0
+        if q_col == -1:
+            if len(rows[0]) >= 13:
+                q_col, opt1, opt2, opt3, opt4, ans_col, ans_text_col, exp_col, topic_col, subtopic_col = 3, 4, 5, 6, 7, 8, 9, 10, 1, 2
+                start_row = 3
+            elif len(rows[0]) >= 10:
+                q_col, opt1, opt2, opt3, opt4, ans_col, exp_col, topic_col, subtopic_col = 3, 4, 5, 6, 7, 8, 9, 1, 2
+                start_row = 1
+            elif len(rows[0]) >= 3:
+                q_col, ans_col = 1, 2
+                if len(rows[0]) >= 4: exp_col = 3
+                start_row = 1
+            else:
+                q_col, ans_col = 0, 1
+                start_row = 0
 
-    parsed_data = []
-    for r in rows[start_row:]:
-        if not any(r) or len(r) <= max(q_col, ans_col): continue
-        
-        q_text = clean_text(r[q_col])
-        ans_raw = clean_text(r[ans_col])
-        if not q_text or not ans_raw: continue
-        
-        if is_header_row(q_text, ans_raw):
-            continue
+        for r in rows[start_row:]:
+            if not any(r) or len(r) <= max(q_col, ans_col): continue
             
-        topic_ovr = clean_text(r[topic_col]) if topic_col != -1 and topic_col < len(r) else ""
-        sub_ovr = clean_text(r[subtopic_col]) if subtopic_col != -1 and subtopic_col < len(r) else ""
-        
-        opt_list = ["", "", "", ""]
-        if opt1 != -1 and opt1 < len(r) and opt2 < len(r) and opt3 < len(r) and opt4 < len(r):
-            opt_list = [clean_text(r[opt1]), clean_text(r[opt2]), clean_text(r[opt3]), clean_text(r[opt4])]
-        elif opts_merged != -1 and opts_merged < len(r):
-            opt_list = split_options(clean_text(r[opts_merged]))
+            q_text = clean_text(r[q_col])
+            ans_raw = clean_text(r[ans_col])
+            if not q_text or not ans_raw: continue
             
-        if not any(opt_list) and ("(1)" in q_text or "(A)" in q_text or "1." in q_text):
-            opt_list = split_options(q_text)
-            q_text = clean_question_text(q_text)
+            if is_header_row(q_text, ans_raw):
+                continue
+                
+            topic_ovr = clean_text(r[topic_col]) if topic_col != -1 and topic_col < len(r) else ""
+            sub_ovr = clean_text(r[subtopic_col]) if subtopic_col != -1 and subtopic_col < len(r) else ""
             
-        orig_q = q_text
-        q_text, opt_list = extract_opt1_from_q(q_text, opt_list)
-        if not q_text and orig_q:
-            q_text = orig_q
-        
-        ans_no = ""
-        digit_match = re.search(r'\b([1-4])\b', ans_raw)
-        char_match = re.search(r'\b([A-D])\b', ans_raw, re.IGNORECASE)
-        
-        if digit_match:
-            ans_no = int(digit_match.group(1))
-        elif char_match:
-            ans_no = ord(char_match.group(1).upper()) - 64
+            opt_list = ["", "", "", ""]
+            if opt1 != -1 and opt1 < len(r) and opt2 < len(r) and opt3 < len(r) and opt4 < len(r):
+                opt_list = [clean_text(r[opt1]), clean_text(r[opt2]), clean_text(r[opt3]), clean_text(r[opt4])]
+            elif opts_merged != -1 and opts_merged < len(r):
+                opt_list = split_options(clean_text(r[opts_merged]))
+                
+            if not any(opt_list) and ("(1)" in q_text or "(A)" in q_text or "1." in q_text):
+                opt_list = split_options(q_text)
+                q_text = clean_question_text(q_text)
+                
+            orig_q = q_text
+            q_text, opt_list = extract_opt1_from_q(q_text, opt_list)
+            if not q_text and orig_q:
+                q_text = orig_q
             
-        ans_text = ""
-        if ans_no and 0 < ans_no <= 4 and opt_list[ans_no - 1]:
-            ans_text = opt_list[ans_no - 1]
-        else:
-            ans_text = ans_raw
-            for i, opt in enumerate(opt_list):
-                if opt and (opt.lower() == ans_text.lower() or ans_text.lower() in opt.lower()):
-                    ans_no = i + 1
-                    ans_text = opt
-                    break
-        
-        if ans_text_col != -1 and ans_text_col < len(r) and r[ans_text_col]:
-            ans_text = clean_text(r[ans_text_col])
+            ans_no = ""
+            digit_match = re.search(r'\b([1-4])\b', ans_raw)
+            char_match = re.search(r'\b([A-D])\b', ans_raw, re.IGNORECASE)
             
-        cleaned_ans = re.sub(r'^\([1-4]\)\s*', '', ans_text).strip()
-        cleaned_ans = re.sub(r'^\([A-D]\)\s*', '', cleaned_ans).strip()
-        if cleaned_ans:
-            ans_text = cleaned_ans
+            if digit_match:
+                ans_no = int(digit_match.group(1))
+            elif char_match:
+                ans_no = ord(char_match.group(1).upper()) - 64
+                
+            ans_text = ""
+            if ans_no and 0 < ans_no <= 4 and opt_list[ans_no - 1]:
+                ans_text = opt_list[ans_no - 1]
+            else:
+                ans_text = ans_raw
+                for i, opt in enumerate(opt_list):
+                    if opt and (opt.lower() == ans_text.lower() or ans_text.lower() in opt.lower()):
+                        ans_no = i + 1
+                        ans_text = opt
+                        break
             
-        if not ans_text and ans_raw:
-            ans_text = ans_raw
+            if ans_text_col != -1 and ans_text_col < len(r) and r[ans_text_col]:
+                ans_text = clean_text(r[ans_text_col])
+                
+            cleaned_ans = re.sub(r'^\([1-4]\)\s*', '', ans_text).strip()
+            cleaned_ans = re.sub(r'^\([A-D]\)\s*', '', cleaned_ans).strip()
+            if cleaned_ans:
+                ans_text = cleaned_ans
+                
+            if not ans_text and ans_raw:
+                ans_text = ans_raw
+                
+            exp_text = clean_text(r[exp_col]) if exp_col != -1 and exp_col < len(r) else ""
             
-        exp_text = clean_text(r[exp_col]) if exp_col != -1 and exp_col < len(r) else ""
-        
-        parsed_data.append({
-            'Question': q_text,
-            'Options': opt_list,
-            'AnsNo': ans_no,
-            'Answer': ans_text,
-            'Explanation': exp_text,
-            'TopicOverride': topic_ovr,
-            'SubTopicOverride': sub_ovr
-        })
-        
-    return parsed_data
+            combined_data.append({
+                'Question': q_text,
+                'Options': opt_list,
+                'AnsNo': ans_no,
+                'Answer': ans_text,
+                'Explanation': exp_text,
+                'TopicOverride': topic_ovr,
+                'SubTopicOverride': sub_ovr
+            })
+            
+    return combined_data
 
 def format_pyq_questions_sheet(ws, data, title_name):
     ws.views.sheetView[0].showGridLines = True
