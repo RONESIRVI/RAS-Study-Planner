@@ -92,11 +92,114 @@ def clean_question_text(q_text):
     q_text = re.sub(r'\s*\([A-D]\)\s*.*$', '', q_text)
     return q_text.strip()
 
+def find_column_mappings(header_row):
+    headers = [str(h).strip().lower() if h is not None else "" for h in header_row]
+    q_col, opt1, opt2, opt3, opt4, opts_merged, ans_col, ans_text_col, exp_col, topic_col, subtopic_col = -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+    
+    # 1. Exact matches or specific terms first
+    for i, h in enumerate(headers):
+        if h in ["question", "प्रश्न", "question / प्रश्न"]:
+            q_col = i
+        elif h in ["उत्तर पाठ", "correct answer text", "ans text"]:
+            ans_text_col = i
+        elif h in ["व्याख्या", "explanation", "exp", "vyakhya"]:
+            exp_col = i
+        elif h in ["विषय", "topic", "topic / विषय"]:
+            topic_col = i
+        elif h in ["अध्याय", "sub-topic", "subtopic", "sub-topic / उप-विषय"]:
+            subtopic_col = i
+
+    # 2. Options
+    for i, h in enumerate(headers):
+        if h in ["विकल्प 1", "option a", "option 1", "विकल्प a", "विकल्प (1)", "option (a)", "option\n(a)", "option(a)"]:
+            opt1 = i
+        elif h in ["विकल्प 2", "option b", "option 2", "विकल्प b", "विकल्प (2)", "option (b)", "option\n(b)", "option(b)"]:
+            opt2 = i
+        elif h in ["विकल्प 3", "option c", "option 3", "विकल्प c", "विकल्प (3)", "option (c)", "option\n(c)", "option(c)"]:
+            opt3 = i
+        elif h in ["विकल्प 4", "option d", "option 4", "विकल्प d", "विकल्प (4)", "option (d)", "option\n(d)", "option(d)"]:
+            opt4 = i
+        elif h in ["विकल्प", "option", "options"]:
+            opts_merged = i
+
+    # 3. Correct Answer
+    for i, h in enumerate(headers):
+        if h in ["सही उत्तर", "correct answer", "answer", "ans", "उत्तर"]:
+            if i != ans_text_col:
+                ans_col = i
+
+    # 4. Fallbacks
+    if q_col == -1:
+        for i, h in enumerate(headers):
+            if "question" in h or "प्रश्न" in h:
+                if not any(x in h for x in ["संख्या", "प्रकार", "id", "option", "विकल्प", "src", "स्रोत"]):
+                    q_col = i
+                    break
+    if ans_col == -1:
+        for i, h in enumerate(headers):
+            if "सही उत्तर" in h or "correct answer" in h or "answer" in h or "ans" in h or "उत्तर" in h:
+                if i != ans_text_col and not any(x in h for x in ["पाठ", "text", "संख्या", "प्रकार"]):
+                    ans_col = i
+                    break
+    if exp_col == -1:
+        for i, h in enumerate(headers):
+            if "व्याख्या" in h or "explanation" in h or "exp" in h or "vyakhya" in h:
+                exp_col = i
+                break
+    if topic_col == -1:
+        for i, h in enumerate(headers):
+            if "विषय" in h or "topic" in h:
+                topic_col = i
+                break
+    if subtopic_col == -1:
+        for i, h in enumerate(headers):
+            if "अध्याय" in h or "subtopic" in h or "sub-topic" in h or "ch #" in h:
+                subtopic_col = i
+                break
+                
+    return q_col, opt1, opt2, opt3, opt4, opts_merged, ans_col, ans_text_col, exp_col, topic_col, subtopic_col
+
+def is_header_row(q_text, ans_raw):
+    q = q_text.lower().strip()
+    a = ans_raw.lower().strip() if ans_raw else ""
+    header_terms = [
+        "question", "प्रश्न", "s.no", "cr.no", "sr.no", "s.no.", "क्र.सं.", "क.स.", "क्र. सं.", "क्र०सं०",
+        "विषय", "topic", "sub-topic", "subtopic", "अध्याय", "ch #", "chapter", "page", "पेज",
+        "उत्तर", "answer", "correct answer", "सही उत्तर", "व्याख्या", "explanation", "exp", "vyakhya",
+        "difficulty", "difficulty range", "difficulty level", "self test", "revision count", "result", "time"
+    ]
+    for term in header_terms:
+        if q == term or q == f"{term} (question)" or q == f"प्रश्न ({term})" or q == f"{term} / प्रश्न" or q == f"प्रश्न / {term}":
+            return True
+            
+    if re.match(r'^(?:प्रश्न|question|s\.?no|क्र\.?सं)\b', q):
+        if any(term in q for term in ["संख्या", "प्रकार", "id", "option", "विकल्प", "src", "स्रोत", "header"]):
+            return True
+            
+    if "प्रश्न" in q and "उत्तर" in a:
+        return True
+    if "question" in q and "answer" in a:
+        return True
+        
+    return False
+
+def extract_opt1_from_q(q_text, opt_list):
+    if not q_text:
+        return q_text, opt_list
+    if not opt_list[0] and opt_list[1]:
+        pattern = r'\s*(?:\(\s*\)|\(\s*(?:1|a|a|0|i|i|\|\||॥|i|:|:\s*:|o)\s*\))\s*([^()]*?)$'
+        match = re.search(pattern, q_text, re.IGNORECASE)
+        if match:
+            extracted_val = match.group(1).strip()
+            if extracted_val and len(re.sub(r'[\s_.,\-—:;]+', '', extracted_val)) > 0:
+                opt_list[0] = extracted_val
+                q_text = q_text[:match.start()].strip()
+    return q_text, opt_list
+
 def parse_file(file_path, default_subtopic):
     print(f"  Parsing: {os.path.basename(file_path)}")
     try:
         wb = openpyxl.load_workbook(file_path, data_only=True)
-        # Select active or questions sheet
         sheet = wb.active
         for name in wb.sheetnames:
             if "प्रश्न" in name or "Questions" in name or "Bank" in name:
@@ -109,47 +212,21 @@ def parse_file(file_path, default_subtopic):
         
     if not rows: return []
     
-    # Column mapping logic
     q_col, opt1, opt2, opt3, opt4, opts_merged, ans_col, ans_text_col, exp_col, topic_col, subtopic_col = -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
     start_row = 0
     
     for idx, r in enumerate(rows[:5]):
-        row_strs = [str(c).lower() if c else "" for c in r]
-        for i, s in enumerate(row_strs):
-            if "question" in s or "प्रश्न" in s:
-                # Avoid matching options
-                if "option" not in s and "विकल्प" not in s:
-                    q_col = i
-            elif "विकल्प 1" in s or "option a" in s or "option 1" in s or "विकल्प a" in s or "option\n(a)" in s or "option(a)" in s:
-                opt1 = i
-            elif "विकल्प 2" in s or "option b" in s or "option 2" in s or "विकल्प b" in s or "option\n(b)" in s or "option(b)" in s:
-                opt2 = i
-            elif "विकल्प 3" in s or "option c" in s or "option 3" in s or "विकल्प c" in s or "option\n(c)" in s or "option(c)" in s:
-                opt3 = i
-            elif "विकल्प 4" in s or "option d" in s or "option 4" in s or "विकल्प d" in s or "option\n(d)" in s or "option(d)" in s:
-                opt4 = i
-            elif "विकल्प" in s or "option" in s:
-                opts_merged = i
-            elif "सही उत्तर" in s or "correct answer" in s or "answer" in s or "ans" in s:
-                if "text" not in s and "पाठ" not in s:
-                    ans_col = i
-            elif "उत्तर पाठ" in s or "correct answer text" in s:
-                ans_text_col = i
-            elif "व्याख्या" in s or "explanation" in s or "exp" in s or "definition" in s or "source" in s or "vyakhya" in s:
-                exp_col = i
-            elif "विषय" in s or "topic" in s:
-                topic_col = i
-            elif "अध्याय" in s or "sub-topic" in s or "subtopic" in s or "ch #" in s:
-                subtopic_col = i
-                
+        non_empty_count = sum(1 for c in r if c is not None and str(c).strip() != "")
+        if non_empty_count < 2:
+            continue
+        
+        q_col, opt1, opt2, opt3, opt4, opts_merged, ans_col, ans_text_col, exp_col, topic_col, subtopic_col = find_column_mappings(r)
         if q_col != -1 and ans_col != -1:
             start_row = idx + 1
             break
 
-    # Fallback to standard indices if not detected
     if q_col == -1:
         if len(rows[0]) >= 13:
-            # Looks like pre-formatted sheet
             q_col, opt1, opt2, opt3, opt4, ans_col, ans_text_col, exp_col, topic_col, subtopic_col = 3, 4, 5, 6, 7, 8, 9, 10, 1, 2
             start_row = 3
         elif len(rows[0]) >= 10:
@@ -168,28 +245,31 @@ def parse_file(file_path, default_subtopic):
         if not any(r) or len(r) <= max(q_col, ans_col): continue
         
         q_text = clean_text(r[q_col])
-        if not q_text: continue
+        ans_raw = clean_text(r[ans_col])
+        if not q_text or not ans_raw: continue
         
-        # Check topic and subtopic
+        if is_header_row(q_text, ans_raw):
+            continue
+            
         topic_ovr = clean_text(r[topic_col]) if topic_col != -1 and topic_col < len(r) else ""
         sub_ovr = clean_text(r[subtopic_col]) if subtopic_col != -1 and subtopic_col < len(r) else ""
         
-        # Parse Options
         opt_list = ["", "", "", ""]
         if opt1 != -1 and opt1 < len(r) and opt2 < len(r) and opt3 < len(r) and opt4 < len(r):
             opt_list = [clean_text(r[opt1]), clean_text(r[opt2]), clean_text(r[opt3]), clean_text(r[opt4])]
         elif opts_merged != -1 and opts_merged < len(r):
             opt_list = split_options(clean_text(r[opts_merged]))
-        
+            
         if not any(opt_list) and ("(1)" in q_text or "(A)" in q_text or "1." in q_text):
             opt_list = split_options(q_text)
             q_text = clean_question_text(q_text)
             
-        # Parse Answers
-        ans_raw = clean_text(r[ans_col])
-        ans_no = ""
+        orig_q = q_text
+        q_text, opt_list = extract_opt1_from_q(q_text, opt_list)
+        if not q_text and orig_q:
+            q_text = orig_q
         
-        # Extract numeric/letter index from answer cell
+        ans_no = ""
         digit_match = re.search(r'\b([1-4])\b', ans_raw)
         char_match = re.search(r'\b([A-D])\b', ans_raw, re.IGNORECASE)
         
@@ -198,33 +278,34 @@ def parse_file(file_path, default_subtopic):
         elif char_match:
             ans_no = ord(char_match.group(1).upper()) - 64
             
-        # Validate matching option text
-        if ans_no and 0 < ans_no <= 4:
+        ans_text = ""
+        if ans_no and 0 < ans_no <= 4 and opt_list[ans_no - 1]:
             ans_text = opt_list[ans_no - 1]
         else:
             ans_text = ans_raw
-            # Try to match ans_text with options
             for i, opt in enumerate(opt_list):
                 if opt and (opt.lower() == ans_text.lower() or ans_text.lower() in opt.lower()):
                     ans_no = i + 1
                     ans_text = opt
                     break
         
-        # Check explicit correct answer text column
         if ans_text_col != -1 and ans_text_col < len(r) and r[ans_text_col]:
             ans_text = clean_text(r[ans_text_col])
             
-        # Strip option tags from correctness strings if necessary
-        ans_text = re.sub(r'^\([1-4]\)\s*', '', ans_text)
-        ans_text = re.sub(r'^\([A-D]\)\s*', '', ans_text)
-        
-        # Explanation
+        cleaned_ans = re.sub(r'^\([1-4]\)\s*', '', ans_text).strip()
+        cleaned_ans = re.sub(r'^\([A-D]\)\s*', '', cleaned_ans).strip()
+        if cleaned_ans:
+            ans_text = cleaned_ans
+            
+        if not ans_text and ans_raw:
+            ans_text = ans_raw
+            
         exp_text = clean_text(r[exp_col]) if exp_col != -1 and exp_col < len(r) else ""
         
         parsed_data.append({
             'Question': q_text,
             'Options': opt_list,
-            'AnsNo': ans_no if ans_no else "",
+            'AnsNo': ans_no,
             'Answer': ans_text,
             'Explanation': exp_text,
             'TopicOverride': topic_ovr,
