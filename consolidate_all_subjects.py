@@ -11,7 +11,7 @@ from openpyxl.utils import get_column_letter
 sys.stdout.reconfigure(encoding='utf-8')
 
 INPUT_DIR = r'R:\Final_PYQ_Output'
-OUTPUT_DIR = os.path.join(INPUT_DIR, "Rajasthan PYQ Advance")
+OUTPUT_DIR = INPUT_DIR
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Styles & Colors
@@ -634,7 +634,7 @@ def history_filter(fpath):
 
 history_path = consolidate_subject(
     "Rajasthan History", 
-    "A - राजस्थान का इतिहास", 
+    "A - राजस्थान  RAS", 
     "राजस्थान इतिहास", 
     "राजस्थान इतिहास",
     filter_func=history_filter
