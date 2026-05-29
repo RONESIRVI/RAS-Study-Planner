@@ -32,6 +32,7 @@ def create_pillar_schedule_image(tasks_data):
     day_num = target_date.day
     suffix = get_day_suffix(day_num)
     month_name = target_date.strftime('%B').upper()
+    year_name = target_date.strftime('%Y')
 
     day_blocks_html = "".join([f'<span class="letter-block">{char}</span>' for char in day_name])
     date_html = f'<span class="date-num">{day_num}</span><span class="date-suffix">{suffix}</span><span class="date-month">{month_name}</span>'
@@ -214,7 +215,7 @@ def create_pillar_schedule_image(tasks_data):
                 text-transform: uppercase;
             }}
 
-            /* Custom Date Badge style matching DATE.jpg format */
+            /* Custom Date Badge style matching DATE.jpg format with year at bottom */
             .date-badge {{
                 background: rgba(17, 25, 40, 0.65);
                 border: 2px solid rgba(255, 255, 255, 0.1);
@@ -226,24 +227,27 @@ def create_pillar_schedule_image(tasks_data):
                 gap: 6px;
                 backdrop-filter: blur(16px);
                 box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+                width: 190px;
+                box-sizing: border-box;
             }}
 
             .day-blocks {{
                 display: flex;
                 gap: 3px;
+                justify-content: center;
             }}
 
             .letter-block {{
-                width: 22px;
-                height: 26px;
+                width: 17px;
+                height: 22px;
                 background: linear-gradient(180deg, #00d2ff 0%, #0066ff 100%);
                 color: #ffffff;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 14px;
+                font-size: 12px;
                 font-weight: 700;
-                border-radius: 4px;
+                border-radius: 3px;
                 text-shadow: 0 1px 2px rgba(0,0,0,0.3);
                 box-sizing: border-box;
             }}
@@ -251,20 +255,22 @@ def create_pillar_schedule_image(tasks_data):
             .date-row {{
                 display: flex;
                 align-items: baseline;
-                font-size: 18px;
+                justify-content: center;
+                font-size: 17px;
                 font-weight: 700;
                 letter-spacing: 0.5px;
                 color: #e2e8f0;
+                margin-top: 2px;
             }}
 
             .date-num {{
                 color: #ff0844; /* Red */
-                font-size: 22px;
+                font-size: 20px;
                 margin-right: 1px;
             }}
 
             .date-suffix {{
-                font-size: 11px;
+                font-size: 10px;
                 color: #94a3b8;
                 vertical-align: super;
                 margin-right: 5px;
@@ -273,6 +279,23 @@ def create_pillar_schedule_image(tasks_data):
             .date-month {{
                 color: #a5b4fc; /* Light Indigo */
                 text-transform: uppercase;
+            }}
+
+            .date-divider {{
+                width: 100%;
+                border: 0;
+                border-top: 1px solid rgba(255, 255, 255, 0.12);
+                margin: 2px 0;
+            }}
+
+            .year-row {{
+                font-size: 14px;
+                font-weight: 700;
+                letter-spacing: 4px;
+                color: #6366f1; /* Indigo matching the subheader */
+                text-align: center;
+                text-transform: uppercase;
+                margin-top: 1px;
             }}
 
             .grid {{
@@ -441,6 +464,10 @@ def create_pillar_schedule_image(tasks_data):
                     </div>
                     <div class="date-row">
                         {date_html}
+                    </div>
+                    <hr class="date-divider">
+                    <div class="year-row">
+                        {year_name}
                     </div>
                 </div>
             </header>
