@@ -18,7 +18,13 @@ def create_pillar_schedule_image(tasks_data):
         top = task.get('topic', '')
         # Only add if it's a real class, not a placeholder
         if sub and '[' not in sub and 'task' in task and 'CLASSES' in task['task']:
-            classes_html += f"<li><strong>{sub}</strong><br><small>{top}</small></li>"
+            classes_html += f"""
+            <li>
+                <div class="item-border"></div>
+                <strong>{sub}</strong>
+                <small>{top}</small>
+            </li>
+            """
             
     revisions_html = ""
     # Smart Find: Search for the Revision task in the list
@@ -26,7 +32,13 @@ def create_pillar_schedule_image(tasks_data):
         if item.get('task') == 'REVISION':
             revisions = item.get('revisions', [])
             for rev in revisions:
-                revisions_html += f"<li><strong>{rev['subject']}</strong><br><small>{rev['topic']}</small></li>"
+                revisions_html += f"""
+                <li>
+                    <div class="item-border"></div>
+                    <strong>{rev['subject']}</strong>
+                    <small>{rev['topic']}</small>
+                </li>
+                """
             break
 
     # Prepare PYQ Test Section (All classes)
@@ -35,7 +47,37 @@ def create_pillar_schedule_image(tasks_data):
         if 'CLASSES' in task.get('task', ''):
             sub = task.get('subject', '')
             top = task.get('topic', '')
-            pyq_topics_html += f"<li>Study: {sub}: {top}</li>"
+            if sub and '[' not in sub:
+                pyq_topics_html += f"""
+                <li>
+                    <div class="item-border"></div>
+                    <strong>{sub}</strong>
+                    <small>{top}</small>
+                </li>
+                """
+
+    # Empty State Handlers
+    if not classes_html:
+        classes_html = """
+        <li class="empty-state">
+            <strong>No Classes Scheduled</strong>
+            <small>Self study day</small>
+        </li>
+        """
+    if not revisions_html:
+        revisions_html = """
+        <li class="empty-state">
+            <strong>No Revisions Scheduled</strong>
+            <small>Focus on daily classes</small>
+        </li>
+        """
+    if not pyq_topics_html:
+        pyq_topics_html = """
+        <li class="empty-state">
+            <strong>No Tests Scheduled</strong>
+            <small>Self study day</small>
+        </li>
+        """
 
     html_content = f"""
     <!DOCTYPE html>
@@ -43,128 +85,299 @@ def create_pillar_schedule_image(tasks_data):
     <head>
         <meta charset="UTF-8">
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;600&family=Noto+Sans+Devanagari:wght@400;700&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap');
             
             :root {{
-                --bg-gradient: radial-gradient(circle at 10% 20%, rgb(15, 15, 30) 0%, rgb(8, 23, 44) 90.1%);
-                --glass-bg: rgba(255, 255, 255, 0.05);
-                --glass-border: rgba(255, 255, 255, 0.1);
-                --accent-color: #00d2ff;
+                --bg-gradient: radial-gradient(circle at top left, #121829 0%, #080c14 100%);
+                --glass-bg: rgba(17, 25, 40, 0.65);
+                --glass-border: rgba(255, 255, 255, 0.08);
+                
+                --color-classes: #00f2fe;
+                --color-revision: #ff0844;
+                --color-pyq: #f5af19;
+                --color-mock: #b158ff;
             }}
 
             body {{
                 margin: 0;
                 padding: 0;
-                width: 1200px;
-                min-height: 675px;
+                width: 1280px;
+                height: 800px;
                 background: var(--bg-gradient);
-                /* Prioritize Noto, then fallback to Windows Standard Hindi Fonts */
                 font-family: 'Outfit', 'Noto Sans Devanagari', 'Mangal', 'Arial Unicode MS', 'Nirmala UI', sans-serif;
-                color: white;
-                position: relative;
+                color: #e2e8f0;
+                overflow: hidden;
+                box-sizing: border-box;
             }}
 
             .container {{
                 padding: 40px;
+                height: 100%;
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                position: relative;
+            }}
+
+            /* Ambient Glow Backgrounds */
+            .glow-1 {{
+                position: absolute;
+                width: 400px;
+                height: 400px;
+                background: radial-gradient(circle, rgba(0, 242, 254, 0.05) 0%, rgba(0,0,0,0) 70%);
+                top: -100px;
+                left: -100px;
+                z-index: 1;
+            }}
+
+            .glow-2 {{
+                position: absolute;
+                width: 400px;
+                height: 400px;
+                background: radial-gradient(circle, rgba(255, 8, 68, 0.03) 0%, rgba(0,0,0,0) 70%);
+                bottom: -100px;
+                right: -100px;
+                z-index: 1;
             }}
 
             header {{
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                margin-bottom: 40px;
                 border-bottom: 1px solid var(--glass-border);
-                padding-bottom: 20px;
+                padding-bottom: 24px;
+                z-index: 10;
             }}
 
             .logo-area h1 {{
-                font-size: 42px;
+                font-size: 36px;
+                font-weight: 700;
+                letter-spacing: 2px;
                 margin: 0;
-                background: linear-gradient(90deg, #fff, #00d2ff);
+                background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
+            }}
+
+            .logo-area p {{
+                margin: 4px 0 0 0;
+                font-size: 12px;
+                font-weight: 600;
+                letter-spacing: 4px;
+                color: #6366f1;
+                text-transform: uppercase;
+            }}
+
+            .date-badge {{
+                background: rgba(99, 102, 241, 0.1);
+                border: 1px solid rgba(99, 102, 241, 0.2);
+                border-radius: 50px;
+                padding: 8px 24px;
+                font-size: 16px;
+                font-weight: 600;
+                color: #a5b4fc;
+                backdrop-filter: blur(10px);
+                box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
             }}
 
             .grid {{
                 display: grid;
                 grid-template-columns: repeat(4, 1fr);
-                gap: 20px;
-                align-items: start;
+                gap: 24px;
+                align-items: stretch;
+                flex-grow: 1;
+                margin-top: 30px;
+                margin-bottom: 10px;
+                z-index: 10;
             }}
 
             .card {{
                 background: var(--glass-bg);
-                backdrop-filter: blur(10px);
+                backdrop-filter: blur(16px);
                 border: 1px solid var(--glass-border);
-                border-radius: 20px;
-                padding: 20px;
+                border-radius: 24px;
+                padding: 24px;
+                display: flex;
+                flex-direction: column;
+                transition: all 0.3s ease;
+                box-sizing: border-box;
+            }}
+
+            /* Custom Glow per card */
+            .card-classes {{
+                box-shadow: 0 10px 30px rgba(0, 242, 254, 0.03);
+            }}
+            .card-revision {{
+                box-shadow: 0 10px 30px rgba(255, 8, 68, 0.03);
+            }}
+            .card-pyq {{
+                box-shadow: 0 10px 30px rgba(245, 175, 25, 0.03);
+            }}
+            .card-mock {{
+                box-shadow: 0 10px 30px rgba(177, 88, 255, 0.03);
             }}
 
             .card-header {{
-                font-size: 12px;
+                font-size: 11px;
                 font-weight: 700;
                 text-transform: uppercase;
-                letter-spacing: 2px;
-                margin-bottom: 15px;
-                padding: 5px 10px;
-                border-radius: 5px;
+                letter-spacing: 2.5px;
+                margin-bottom: 20px;
+                padding: 6px 14px;
+                border-radius: 50px;
                 display: inline-block;
+                width: fit-content;
             }}
 
-            .cls-h {{ background: #00d2ff22; color: #00d2ff; }}
-            .rev-h {{ background: #ff009922; color: #ff0099; }}
-            .pyq-h {{ background: #ffb80022; color: #ffb800; }}
-            .mock-h {{ background: #c040ff22; color: #c040ff; }}
+            .cls-h {{ background: rgba(0, 242, 254, 0.12); color: var(--color-classes); border: 1px solid rgba(0, 242, 254, 0.2); }}
+            .rev-h {{ background: rgba(255, 8, 68, 0.12); color: var(--color-revision); border: 1px solid rgba(255, 8, 68, 0.2); }}
+            .pyq-h {{ background: rgba(245, 175, 25, 0.12); color: var(--color-pyq); border: 1px solid rgba(245, 175, 25, 0.2); }}
+            .mock-h {{ background: rgba(177, 88, 255, 0.12); color: var(--color-mock); border: 1px solid rgba(177, 88, 255, 0.2); }}
 
-            h3 {{ font-size: 18px; margin: 10px 0; color: #fff; opacity: 0.9; }}
-            ul {{ list-style: none; padding: 0; margin: 0; }}
-            li {{
-                margin-bottom: 12px;
-                font-size: 14px;
+            .card h3 {{
+                font-size: 18px;
+                font-weight: 600;
+                margin: 0 0 20px 0;
+                color: #ffffff;
+                letter-spacing: 0.5px;
+            }}
+
+            .card ul {{
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                overflow-y: auto;
+                flex-grow: 1;
+            }}
+
+            .card li {{
+                background: rgba(255, 255, 255, 0.02);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 16px;
+                padding: 14px 16px;
+                position: relative;
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }}
+
+            .item-border {{
+                position: absolute;
+                left: 0;
+                top: 14px;
+                bottom: 14px;
+                width: 3px;
+                border-radius: 0 4px 4px 0;
+            }}
+
+            .card-classes .item-border {{ background: var(--color-classes); }}
+            .card-revision .item-border {{ background: var(--color-revision); }}
+            .card-pyq .item-border {{ background: var(--color-pyq); }}
+            .card-mock .item-border {{ background: var(--color-mock); }}
+
+            .card li strong {{
+                display: block;
+                font-size: 14.5px;
+                font-weight: 600;
+                color: #ffffff;
                 line-height: 1.4;
-                color: rgba(255, 255, 255, 0.85);
-                border-left: 2px solid var(--accent-color);
-                padding-left: 10px;
+                padding-left: 6px;
             }}
-            strong {{ display: block; margin-bottom: 2px; color: #fff; }}
-            small {{ font-size: 12px; color: #00d2ff; opacity: 0.8; }}
 
+            .card li small {{
+                display: block;
+                font-size: 12px;
+                font-weight: 400;
+                color: #94a3b8;
+                line-height: 1.4;
+                padding-left: 6px;
+            }}
 
+            .empty-state {{
+                background: rgba(255, 255, 255, 0.01) !important;
+                border: 1px dashed rgba(255, 255, 255, 0.08) !important;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                padding: 24px !important;
+            }}
+
+            .empty-state strong {{
+                color: #64748b !important;
+                padding-left: 0 !important;
+            }}
+
+            .empty-state small {{
+                color: #475569 !important;
+                padding-left: 0 !important;
+            }}
+
+            footer {{
+                text-align: center;
+                font-size: 11px;
+                letter-spacing: 3px;
+                color: #475569;
+                text-transform: uppercase;
+                margin-top: 15px;
+                z-index: 10;
+            }}
         </style>
     </head>
     <body>
+        <div class="glow-1"></div>
+        <div class="glow-2"></div>
+        
         <div class="container">
             <header>
-                <div class="logo-area"><h1>AIR-01 RAS MENTORSHIP</h1></div>
-                <div style="font-size: 18px; color: #00d2ff;">📅 Date : {(datetime.now() + timedelta(days=1)).strftime('%d %b %Y')}</div>
+                <div class="logo-area">
+                    <h1>AIR-01 RAS MENTORSHIP</h1>
+                    <p>Daily Planner & Task Tracker</p>
+                </div>
+                <div class="date-badge">📅 {(datetime.now() + timedelta(days=1)).strftime('%d %B %Y')}</div>
             </header>
             
             <div class="grid">
-                <div class="card">
+                <div class="card card-classes">
                     <div class="card-header cls-h">CLASSES</div>
                     <h3>DAILY FOCUS</h3>
-                    <ul>{classes_html}</ul>
+                    <ul>
+                        {classes_html}
+                    </ul>
                 </div>
 
-                <div class="card">
+                <div class="card card-revision">
                     <div class="card-header rev-h">REVISION</div>
                     <h3>SPACED REP</h3>
-                    <ul>{revisions_html}</ul>
+                    <ul>
+                        {revisions_html}
+                    </ul>
                 </div>
 
-                <div class="card">
+                <div class="card card-pyq">
                     <div class="card-header pyq-h">PYQ TEST</div>
                     <h3>ASSESSMENT</h3>
-                    <ul>{pyq_topics_html}</ul>
+                    <ul>
+                        {pyq_topics_html}
+                    </ul>
                 </div>
 
-                <div class="card">
+                <div class="card card-mock">
                     <div class="card-header mock-h">MOCK TEST</div>
                     <h3>STRENGTHEN</h3>
-                    <ul>{pyq_topics_html}</ul>
+                    <ul>
+                        {pyq_topics_html}
+                    </ul>
                 </div>
             </div>
-
+            
+            <footer>
+                "consistent daily action is the secret to air-1"
+            </footer>
         </div>
     </body>
     </html>
