@@ -48,7 +48,7 @@ def send_schedule_email(attachment_paths, recipient_email, extra_msg="", custom_
     else:
         msg['Subject'] = f"RAS Adaptive Study Plan - {datetime.now().strftime('%d %b %Y')}"
 
-    body = f"नमस्ते,\n\nआज का आपका RAS स्टडी प्लान और PYQ एक्सेल फाइलें संलग्न हैं।\n\nलक्ष्य की ओर बढ़ते रहें! {extra_msg}\n\nसादर,\nAIR-01 Automation System"
+    body = f"नमस्ते,\n\nआज का आपका RAS स्टडी प्लान संलग्न है।\n\nलक्ष्य की ओर बढ़ते रहें! {extra_msg}\n\nसादर,\nAIR-01 Automation System"
     msg.attach(MIMEText(body, 'plain'))
 
     # Attach Files
