@@ -45,16 +45,16 @@ def run_automation():
         img_path = image_generator.create_pillar_schedule_image(image_data)
         print(f"DONE: Image generated: {img_path}")
         
-        # 3. Generate PYQ Excel Files for each class
-        print(f"Generating PYQ Excel files for {len(classes_list)} topics...")
-        pyq_files = []
-        for task in classes_list:
-            pyq_file = excel_generator.generate_topic_excel(task['topic'])
-            if pyq_file:
-                pyq_files.append(pyq_file)
+        # 3. Generate PYQ Excel Files for each class (Disabled as per request)
+        # print(f"Generating PYQ Excel files for {len(classes_list)} topics...")
+        # pyq_files = []
+        # for task in classes_list:
+        #     pyq_file = excel_generator.generate_topic_excel(task['topic'])
+        #     if pyq_file:
+        #         pyq_files.append(pyq_file)
         
         # 4. Prepare Attachments
-        attachments = [img_path] + pyq_files
+        attachments = [img_path]
         
         # 5. Send Email
         print(f"Preparing to send email with {len(attachments)} attachments...")
