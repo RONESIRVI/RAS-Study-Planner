@@ -1,4 +1,5 @@
 import os
+import shutil
 from html2image import Html2Image
 from datetime import datetime, timedelta
 
@@ -10,7 +11,31 @@ if os.environ.get("GITHUB_ACTIONS"):
 else:
     hti = Html2Image(output_path=BASE_DIR)
 
+def get_day_suffix(day):
+    if 11 <= day <= 13:
+        return "th"
+    return {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
+
 def create_pillar_schedule_image(tasks_data):
+    # Copy logo from assets to output folder for relative path loading in Chrome
+    logo_src = os.path.join("assets", "Gemini_Generated_Image.png")
+    logo_dest = os.path.join(BASE_DIR, "logo.png")
+    if os.path.exists(logo_src):
+        try:
+            shutil.copy2(logo_src, logo_dest)
+        except Exception as e:
+            print(f"Error copying logo: {e}")
+
+    # Date formatting logic matching DATE.jpg
+    target_date = datetime.now() + timedelta(days=1)
+    day_name = target_date.strftime('%A').upper()
+    day_num = target_date.day
+    suffix = get_day_suffix(day_num)
+    month_name = target_date.strftime('%B').upper()
+
+    day_blocks_html = "".join([f'<span class="letter-block">{char}</span>' for char in day_name])
+    date_html = f'<span class="date-num">{day_num}</span><span class="date-suffix">{suffix}</span><span class="date-month">{month_name}</span>'
+
     # Prepare Content (Dynamic Loops)
     classes_html = ""
     for task in tasks_data:
@@ -150,8 +175,28 @@ def create_pillar_schedule_image(tasks_data):
                 z-index: 10;
             }}
 
-            .logo-area h1 {{
-                font-size: 36px;
+            .logo-area {{
+                display: flex;
+                align-items: center;
+                gap: 16px;
+            }}
+
+            .logo-img {{
+                width: 56px;
+                height: 56px;
+                object-fit: contain;
+                border-radius: 50%;
+                border: 2px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 4px 12px rgba(0, 242, 254, 0.15);
+            }}
+
+            .logo-text {{
+                display: flex;
+                flex-direction: column;
+            }}
+
+            .logo-text h1 {{
+                font-size: 34px;
                 font-weight: 700;
                 letter-spacing: 2px;
                 margin: 0;
@@ -160,25 +205,74 @@ def create_pillar_schedule_image(tasks_data):
                 -webkit-text-fill-color: transparent;
             }}
 
-            .logo-area p {{
+            .logo-text p {{
                 margin: 4px 0 0 0;
-                font-size: 12px;
+                font-size: 11px;
                 font-weight: 600;
                 letter-spacing: 4px;
                 color: #6366f1;
                 text-transform: uppercase;
             }}
 
+            /* Custom Date Badge style matching DATE.jpg format */
             .date-badge {{
-                background: rgba(99, 102, 241, 0.1);
-                border: 1px solid rgba(99, 102, 241, 0.2);
-                border-radius: 50px;
-                padding: 8px 24px;
-                font-size: 16px;
-                font-weight: 600;
-                color: #a5b4fc;
-                backdrop-filter: blur(10px);
-                box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+                background: rgba(17, 25, 40, 0.65);
+                border: 2px solid rgba(255, 255, 255, 0.1);
+                border-radius: 16px;
+                padding: 10px 16px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 6px;
+                backdrop-filter: blur(16px);
+                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            }}
+
+            .day-blocks {{
+                display: flex;
+                gap: 3px;
+            }}
+
+            .letter-block {{
+                width: 22px;
+                height: 26px;
+                background: linear-gradient(180deg, #00d2ff 0%, #0066ff 100%);
+                color: #ffffff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+                font-weight: 700;
+                border-radius: 4px;
+                text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+                box-sizing: border-box;
+            }}
+
+            .date-row {{
+                display: flex;
+                align-items: baseline;
+                font-size: 18px;
+                font-weight: 700;
+                letter-spacing: 0.5px;
+                color: #e2e8f0;
+            }}
+
+            .date-num {{
+                color: #ff0844; /* Red */
+                font-size: 22px;
+                margin-right: 1px;
+            }}
+
+            .date-suffix {{
+                font-size: 11px;
+                color: #94a3b8;
+                vertical-align: super;
+                margin-right: 5px;
+            }}
+
+            .date-month {{
+                color: #a5b4fc; /* Light Indigo */
+                text-transform: uppercase;
             }}
 
             .grid {{
@@ -335,10 +429,20 @@ def create_pillar_schedule_image(tasks_data):
         <div class="container">
             <header>
                 <div class="logo-area">
-                    <h1>AIR-01 RAS MENTORSHIP</h1>
-                    <p>Daily Planner & Task Tracker</p>
+                    <img class="logo-img" src="logo.png" alt="Logo">
+                    <div class="logo-text">
+                        <h1>AIR-01 RAS MENTORSHIP</h1>
+                        <p>Daily Planner & Task Tracker</p>
+                    </div>
                 </div>
-                <div class="date-badge">📅 {(datetime.now() + timedelta(days=1)).strftime('%d %B %Y')}</div>
+                <div class="date-badge">
+                    <div class="day-blocks">
+                        {day_blocks_html}
+                    </div>
+                    <div class="date-row">
+                        {date_html}
+                    </div>
+                </div>
             </header>
             
             <div class="grid">
