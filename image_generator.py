@@ -44,6 +44,7 @@ def create_pillar_schedule_image(tasks_data):
                 <div class="item-border"></div>
                 <strong>{sub}</strong>
                 <small>{top}</small>
+                <div class="status-dot"></div>
             </li>
             """
             
@@ -58,6 +59,7 @@ def create_pillar_schedule_image(tasks_data):
                     <div class="item-border"></div>
                     <strong>{rev['subject']}</strong>
                     <small>{rev['topic']}</small>
+                    <div class="status-dot"></div>
                 </li>
                 """
             break
@@ -74,6 +76,7 @@ def create_pillar_schedule_image(tasks_data):
                     <div class="item-border"></div>
                     <strong>{sub}</strong>
                     <small>{top}</small>
+                    <div class="status-dot"></div>
                 </li>
                 """
 
@@ -109,14 +112,14 @@ def create_pillar_schedule_image(tasks_data):
             @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap');
             
             :root {{
-                --bg-gradient: radial-gradient(circle at top left, #121829 0%, #080c14 100%);
-                --glass-bg: rgba(17, 25, 40, 0.65);
+                --bg-gradient: linear-gradient(135deg, #0d0f1d 0%, #15103c 35%, #2a0f44 70%, #0c101d 100%);
+                --glass-bg: rgba(255, 255, 255, 0.03);
                 --glass-border: rgba(255, 255, 255, 0.08);
                 
-                --color-classes: #00f2fe;
-                --color-revision: #ff0844;
-                --color-pyq: #f5af19;
-                --color-mock: #b158ff;
+                --color-classes: #10b981;
+                --color-revision: #ec4899;
+                --color-pyq: #eab308;
+                --color-mock: #a855f7;
             }}
 
             body {{
@@ -129,6 +132,7 @@ def create_pillar_schedule_image(tasks_data):
                 color: #e2e8f0;
                 overflow: hidden;
                 box-sizing: border-box;
+                position: relative;
             }}
 
             .container {{
@@ -144,20 +148,20 @@ def create_pillar_schedule_image(tasks_data):
             /* Ambient Glow Backgrounds */
             .glow-1 {{
                 position: absolute;
-                width: 400px;
-                height: 400px;
-                background: radial-gradient(circle, rgba(0, 242, 254, 0.05) 0%, rgba(0,0,0,0) 70%);
-                top: -100px;
-                left: -100px;
+                width: 500px;
+                height: 500px;
+                background: radial-gradient(circle, rgba(0, 242, 254, 0.06) 0%, rgba(0,0,0,0) 70%);
+                top: -150px;
+                left: -150px;
                 z-index: 1;
             }}
 
             .glow-2 {{
                 position: absolute;
-                width: 400px;
-                height: 400px;
-                background: radial-gradient(circle, rgba(255, 8, 68, 0.03) 0%, rgba(0,0,0,0) 70%);
-                bottom: -100px;
+                width: 600px;
+                height: 600px;
+                background: radial-gradient(circle, rgba(168, 85, 247, 0.04) 0%, rgba(0,0,0,0) 70%);
+                bottom: -200px;
                 right: -100px;
                 z-index: 1;
             }}
@@ -307,7 +311,7 @@ def create_pillar_schedule_image(tasks_data):
 
             .card {{
                 background: var(--glass-bg);
-                backdrop-filter: blur(16px);
+                backdrop-filter: blur(25px) saturate(120%);
                 border: 1px solid var(--glass-border);
                 border-radius: 24px;
                 padding: 24px;
@@ -315,20 +319,33 @@ def create_pillar_schedule_image(tasks_data):
                 flex-direction: column;
                 transition: all 0.3s ease;
                 box-sizing: border-box;
+                position: relative;
+                overflow: hidden;
+            }}
+
+            .card::before {{
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.08) 55%, transparent 60%);
+                pointer-events: none;
             }}
 
             /* Custom Glow per card */
             .card-classes {{
-                box-shadow: 0 10px 30px rgba(0, 242, 254, 0.03);
+                box-shadow: 0 10px 30px rgba(16, 185, 129, 0.03);
             }}
             .card-revision {{
-                box-shadow: 0 10px 30px rgba(255, 8, 68, 0.03);
+                box-shadow: 0 10px 30px rgba(236, 72, 153, 0.03);
             }}
             .card-pyq {{
-                box-shadow: 0 10px 30px rgba(245, 175, 25, 0.03);
+                box-shadow: 0 10px 30px rgba(234, 179, 8, 0.03);
             }}
             .card-mock {{
-                box-shadow: 0 10px 30px rgba(177, 88, 255, 0.03);
+                box-shadow: 0 10px 30px rgba(168, 85, 247, 0.03);
             }}
 
             .card-header {{
@@ -343,10 +360,10 @@ def create_pillar_schedule_image(tasks_data):
                 width: fit-content;
             }}
 
-            .cls-h {{ background: rgba(0, 242, 254, 0.12); color: var(--color-classes); border: 1px solid rgba(0, 242, 254, 0.2); }}
-            .rev-h {{ background: rgba(255, 8, 68, 0.12); color: var(--color-revision); border: 1px solid rgba(255, 8, 68, 0.2); }}
-            .pyq-h {{ background: rgba(245, 175, 25, 0.12); color: var(--color-pyq); border: 1px solid rgba(245, 175, 25, 0.2); }}
-            .mock-h {{ background: rgba(177, 88, 255, 0.12); color: var(--color-mock); border: 1px solid rgba(177, 88, 255, 0.2); }}
+            .cls-h {{ background: rgba(16, 185, 129, 0.15); color: var(--color-classes); border: 1px solid rgba(16, 185, 129, 0.35); box-shadow: 0 0 12px rgba(16, 185, 129, 0.1); }}
+            .rev-h {{ background: rgba(236, 72, 153, 0.15); color: var(--color-revision); border: 1px solid rgba(236, 72, 153, 0.35); box-shadow: 0 0 12px rgba(236, 72, 153, 0.1); }}
+            .pyq-h {{ background: rgba(234, 179, 8, 0.15); color: var(--color-pyq); border: 1px solid rgba(234, 179, 8, 0.35); box-shadow: 0 0 12px rgba(234, 179, 8, 0.1); }}
+            .mock-h {{ background: rgba(168, 85, 247, 0.15); color: var(--color-mock); border: 1px solid rgba(168, 85, 247, 0.35); box-shadow: 0 0 12px rgba(168, 85, 247, 0.1); }}
 
             .card h3 {{
                 font-size: 18px;
@@ -368,16 +385,33 @@ def create_pillar_schedule_image(tasks_data):
             }}
 
             .card li {{
-                background: rgba(255, 255, 255, 0.02);
+                background: rgba(13, 17, 28, 0.7);
                 border: 1px solid rgba(255, 255, 255, 0.05);
-                border-radius: 16px;
+                border-radius: 12px;
                 padding: 14px 16px;
+                padding-right: 36px; /* space for the dot */
                 position: relative;
                 box-sizing: border-box;
                 display: flex;
                 flex-direction: column;
                 gap: 4px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             }}
+
+            .status-dot {{
+                position: absolute;
+                right: 16px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+            }}
+
+            .card-classes .status-dot {{ background: var(--color-classes); box-shadow: 0 0 8px var(--color-classes); }}
+            .card-revision .status-dot {{ background: var(--color-revision); box-shadow: 0 0 8px var(--color-revision); }}
+            .card-pyq .status-dot {{ background: var(--color-pyq); box-shadow: 0 0 8px var(--color-pyq); }}
+            .card-mock .status-dot {{ background: var(--color-mock); box-shadow: 0 0 8px var(--color-mock); }}
 
             .item-border {{
                 position: absolute;
@@ -437,6 +471,19 @@ def create_pillar_schedule_image(tasks_data):
                 color: #475569;
                 text-transform: uppercase;
                 margin-top: 15px;
+                z-index: 10;
+            }}
+
+            .sparkle-star {{
+                position: absolute;
+                bottom: 25px;
+                right: 40px;
+                width: 24px;
+                height: 24px;
+                background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+                clip-path: polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);
+                opacity: 0.8;
+                filter: drop-shadow(0 0 6px rgba(165, 180, 252, 0.6));
                 z-index: 10;
             }}
         </style>
@@ -505,6 +552,7 @@ def create_pillar_schedule_image(tasks_data):
             <footer>
                 "consistent daily action is the secret to air-1"
             </footer>
+            <div class="sparkle-star"></div>
         </div>
     </body>
     </html>
