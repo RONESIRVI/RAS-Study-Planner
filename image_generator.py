@@ -522,7 +522,6 @@ def create_pillar_schedule_image(tasks_data):
                     <img class="logo-img" src="{logo_file_url}" alt="Logo">
                     <div class="logo-text">
                         <h1>AIR-01 RAS MENTORSHIP</h1>
-                        <p>Daily Planner & Task Tracker</p>
                     </div>
                 </div>
                 <div class="date-badge">
