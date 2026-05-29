@@ -80,6 +80,23 @@ def create_pillar_schedule_image(tasks_data):
                 </li>
                 """
 
+    # Prepare Mock Test Section (Only Spaced Repetition revisions, not Same Day Rev)
+    mock_test_html = ""
+    for item in tasks_data:
+        if item.get('task') == 'REVISION':
+            revisions = item.get('revisions', [])
+            for rev in revisions:
+                if "Same Day Rev" not in rev.get('topic', ''):
+                    mock_test_html += f"""
+                    <li>
+                        <div class="item-border"></div>
+                        <strong>{rev['subject']}</strong>
+                        <small>{rev['topic']}</small>
+                        <div class="status-dot"></div>
+                    </li>
+                    """
+            break
+
     # Empty State Handlers
     if not classes_html:
         classes_html = """
@@ -97,6 +114,13 @@ def create_pillar_schedule_image(tasks_data):
         """
     if not pyq_topics_html:
         pyq_topics_html = """
+        <li class="empty-state">
+            <strong>No Tests Scheduled</strong>
+            <small>Self study day</small>
+        </li>
+        """
+    if not mock_test_html:
+        mock_test_html = """
         <li class="empty-state">
             <strong>No Tests Scheduled</strong>
             <small>Self study day</small>
@@ -544,7 +568,7 @@ def create_pillar_schedule_image(tasks_data):
                     <div class="card-header mock-h">MOCK TEST</div>
                     <h3>STRENGTHEN</h3>
                     <ul>
-                        {pyq_topics_html}
+                        {mock_test_html}
                     </ul>
                 </div>
             </div>
