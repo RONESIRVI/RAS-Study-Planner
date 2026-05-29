@@ -21,7 +21,8 @@ def get_tracker_path():
     return target_path
 
 def get_adaptive_tasks():
-    today = datetime.now().date()
+    # The planner generates a plan for tomorrow, so look up revisions scheduled for tomorrow
+    target_date = (datetime.now() + timedelta(days=1)).date()
     tracker_file = get_tracker_path()
     wb = openpyxl.load_workbook(tracker_file, data_only=True, read_only=True)
     sheet_names = wb.sheetnames
@@ -59,7 +60,7 @@ def get_adaptive_tasks():
                             break
                         except: pass
                 
-                if parsed_date == today:
+                if parsed_date == target_date:
                     done_val = str(row[d_idx+1]).strip().lower() if d_idx+1 < len(row) else ""
                     if done_val != "done":
                         label = f"R{(d_idx-1)//2}" if d_idx < 11 else "Final"
