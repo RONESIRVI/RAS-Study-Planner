@@ -96,67 +96,54 @@ def find_column_mappings(header_row):
     headers = [str(h).strip().lower() if h is not None else "" for h in header_row]
     q_col, opt1, opt2, opt3, opt4, opts_merged, ans_col, ans_text_col, exp_col, topic_col, subtopic_col = -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
     
-    # 1. Exact matches or specific terms first
+    # 1. Question Column
     for i, h in enumerate(headers):
-        if h in ["question", "प्रश्न", "question / प्रश्न"]:
+        if ("question" in h or "प्रश्न" in h) and not any(x in h for x in ["type", "प्रकार", "संख्या", "no", "id", "option", "विकल्प"]):
             q_col = i
-        elif h in ["उत्तर पाठ", "correct answer text", "ans text"]:
-            ans_text_col = i
-        elif h in ["व्याख्या", "explanation", "exp", "vyakhya"]:
-            exp_col = i
-        elif h in ["विषय", "topic", "topic / विषय"]:
-            topic_col = i
-        elif h in ["अध्याय", "sub-topic", "subtopic", "sub-topic / उप-विषय"]:
-            subtopic_col = i
-
+            break
+            
     # 2. Options
     for i, h in enumerate(headers):
-        if h in ["विकल्प 1", "option a", "option 1", "विकल्प a", "विकल्प (1)", "option (a)", "option\n(a)", "option(a)"]:
+        if "option a" in h or "विकल्प 1" in h or "विकल्प a" in h or "opt a" in h or "option (a)" in h or "(1) option" in h or "विकल्प (1)" in h:
             opt1 = i
-        elif h in ["विकल्प 2", "option b", "option 2", "विकल्प b", "विकल्प (2)", "option (b)", "option\n(b)", "option(b)"]:
+        elif "option b" in h or "विकल्प 2" in h or "विकल्प b" in h or "opt b" in h or "option (b)" in h or "(2) option" in h or "विकल्प (2)" in h:
             opt2 = i
-        elif h in ["विकल्प 3", "option c", "option 3", "विकल्प c", "विकल्प (3)", "option (c)", "option\n(c)", "option(c)"]:
+        elif "option c" in h or "विकल्प 3" in h or "विकल्प c" in h or "opt c" in h or "option (c)" in h or "(3) option" in h or "विकल्प (3)" in h:
             opt3 = i
-        elif h in ["विकल्प 4", "option d", "option 4", "विकल्प d", "विकल्प (4)", "option (d)", "option\n(d)", "option(d)"]:
+        elif "option d" in h or "विकल्प 4" in h or "विकल्प d" in h or "opt d" in h or "option (d)" in h or "(4) option" in h or "विकल्प (4)" in h:
             opt4 = i
         elif h in ["विकल्प", "option", "options"]:
             opts_merged = i
 
     # 3. Correct Answer
     for i, h in enumerate(headers):
-        if h in ["सही उत्तर", "correct answer", "answer", "ans", "उत्तर"]:
-            if i != ans_text_col:
-                ans_col = i
+        if h in ["उत्तर पाठ", "correct answer text", "ans text", "answer text"]:
+            ans_text_col = i
+            
+    for i, h in enumerate(headers):
+        if i == ans_text_col:
+            continue
+        # We look for "ans", "answer", "उत्तर" but not "text", "पाठ", "संख्या", "no"
+        if ("answer" in h or "उत्तर" in h or "ans" in h) and not any(x in h for x in ["text", "पाठ", "संख्या", "no"]):
+            ans_col = i
+            break
 
-    # 4. Fallbacks
-    if q_col == -1:
-        for i, h in enumerate(headers):
-            if "question" in h or "प्रश्न" in h:
-                if not any(x in h for x in ["संख्या", "प्रकार", "id", "option", "विकल्प", "src", "स्रोत"]):
-                    q_col = i
-                    break
+    # If ans_col is still not found, check for "सही उत्तर" or "correct answer" or "ans"
     if ans_col == -1:
         for i, h in enumerate(headers):
-            if "सही उत्तर" in h or "correct answer" in h or "answer" in h or "ans" in h or "उत्तर" in h:
-                if i != ans_text_col and not any(x in h for x in ["पाठ", "text", "संख्या", "प्रकार"]):
-                    ans_col = i
-                    break
-    if exp_col == -1:
-        for i, h in enumerate(headers):
-            if "व्याख्या" in h or "explanation" in h or "exp" in h or "vyakhya" in h:
-                exp_col = i
+            if i != ans_text_col and any(x in h for x in ["सही उत्तर", "correct answer", "ans", "answer", "उत्तर"]):
+                ans_col = i
                 break
-    if topic_col == -1:
-        for i, h in enumerate(headers):
-            if "विषय" in h or "topic" in h:
-                topic_col = i
-                break
-    if subtopic_col == -1:
-        for i, h in enumerate(headers):
-            if "अध्याय" in h or "subtopic" in h or "sub-topic" in h or "ch #" in h:
-                subtopic_col = i
-                break
-                
+
+    # 4. Explanation, Topic, Subtopic
+    for i, h in enumerate(headers):
+        if "व्याख्या" in h or "explanation" in h or "exp" in h or "vyakhya" in h:
+            exp_col = i
+        elif "विषय" in h or "topic" in h:
+            topic_col = i
+        elif "अध्याय" in h or "subtopic" in h or "sub-topic" in h or "ch #" in h:
+            subtopic_col = i
+            
     return q_col, opt1, opt2, opt3, opt4, opts_merged, ans_col, ans_text_col, exp_col, topic_col, subtopic_col
 
 def is_header_row(q_text, ans_raw):
@@ -252,6 +239,8 @@ def parse_file(file_path, default_subtopic):
             
             q_text = clean_text(r[q_col])
             ans_raw = clean_text(r[ans_col])
+            if not ans_raw and ans_text_col != -1 and ans_text_col < len(r):
+                ans_raw = clean_text(r[ans_text_col])
             if not q_text or not ans_raw: continue
             
             if is_header_row(q_text, ans_raw):
@@ -296,7 +285,12 @@ def parse_file(file_path, default_subtopic):
                         break
             
             if ans_text_col != -1 and ans_text_col < len(r) and r[ans_text_col]:
-                ans_text = clean_text(r[ans_text_col])
+                val_text = clean_text(r[ans_text_col])
+                if not ans_text or ans_text.isdigit() or len(ans_text) <= 1 or re.match(r'^\s*\(?[1-4a-da-d]\)?\s*[\.\-—]?\s*', val_text, re.IGNORECASE):
+                    if ans_no and 0 < ans_no <= 4 and opt_list[ans_no - 1]:
+                        pass
+                    else:
+                        ans_text = val_text
                 
             cleaned_ans = re.sub(r'^\([1-4]\)\s*', '', ans_text).strip()
             cleaned_ans = re.sub(r'^\([A-D]\)\s*', '', cleaned_ans).strip()
@@ -625,81 +619,82 @@ def consolidate_subject(subject_name, folder_name, default_topic, title_name, fi
     print(f"[SUCCESS] Consolidated Excel saved: {out_path}")
     return out_path
 
-# Execute consolidation for all 8 subjects
+if __name__ == "__main__":
+    # Execute consolidation for all 8 subjects
 
-# 1. Rajasthan History
-def history_filter(fpath):
-    fname = os.path.basename(fpath).lower()
-    return "history" in fname or "इतिहास" in fname or "पुरातात्विक" in fname
+    # 1. Rajasthan History
+    def history_filter(fpath):
+        fname = os.path.basename(fpath).lower()
+        return "history" in fname or "इतिहास" in fname or "पुरातात्विक" in fname
 
-history_path = consolidate_subject(
-    "राजस्थान का इतिहास", 
-    "A - राजस्थान  RAS", 
-    "राजस्थान इतिहास", 
-    "राजस्थान इतिहास",
-    filter_func=history_filter
-)
+    history_path = consolidate_subject(
+        "राजस्थान का इतिहास", 
+        "A - राजस्थान  RAS", 
+        "राजस्थान इतिहास", 
+        "राजस्थान इतिहास",
+        filter_func=history_filter
+    )
 
-# Copy consolidated history file to Rajasthan PYQ.xlsx
-if history_path and os.path.exists(history_path):
-    dest = os.path.join(OUTPUT_DIR, "Rajasthan PYQ.xlsx")
-    shutil.copy2(history_path, dest)
-    print(f"[COPY] Copied History master to Rajasthan PYQ.xlsx")
+    # Copy consolidated history file to Rajasthan PYQ.xlsx
+    if history_path and os.path.exists(history_path):
+        dest = os.path.join(OUTPUT_DIR, "Rajasthan PYQ.xlsx")
+        shutil.copy2(history_path, dest)
+        print(f"[COPY] Copied History master to Rajasthan PYQ.xlsx")
 
-# 2. Rajasthan Art & Culture
-art_path = consolidate_subject(
-    "Rajasthan Art & Culture", 
-    "B - कला एवं संस्कृति", 
-    "राजस्थान कला एवं संस्कृति", 
-    "राजस्थान कला एवं संस्कृति"
-)
+    # 2. Rajasthan Art & Culture
+    art_path = consolidate_subject(
+        "Rajasthan Art & Culture", 
+        "B - कला एवं संस्कृति", 
+        "राजस्थान कला एवं संस्कृति", 
+        "राजस्थान कला एवं संस्कृति"
+    )
 
-# 3. COMPUTER
-consolidate_subject(
-    "COMPUTER", 
-    "COMPUTER", 
-    "COMPUTER", 
-    "कम्प्यूटर (COMPUTER)"
-)
+    # 3. COMPUTER
+    consolidate_subject(
+        "COMPUTER", 
+        "COMPUTER", 
+        "COMPUTER", 
+        "कम्प्यूटर (COMPUTER)"
+    )
 
-# 4. Science
-consolidate_subject(
-    "science", 
-    "science", 
-    "Science", 
-    "सामान्य विज्ञान (Science)"
-)
+    # 4. Science
+    consolidate_subject(
+        "science", 
+        "science", 
+        "Science", 
+        "सामान्य विज्ञान (Science)"
+    )
 
-# 5. Geography
-consolidate_subject(
-    "भारत भूगोल", 
-    "भारत भूगोल", 
-    "भारत भूगोल", 
-    "भारत भूगोल"
-)
+    # 5. Geography
+    consolidate_subject(
+        "भारत भूगोल", 
+        "भारत भूगोल", 
+        "भारत भूगोल", 
+        "भारत भूगोल"
+    )
 
-# 6. Polity
-consolidate_subject(
-    "राजस्थान राजव्यवस्था", 
-    "राजस्थान राजव्यवस्था", 
-    "राजस्थान राजव्यवस्था", 
-    "राजस्थान राजव्यवस्था"
-)
+    # 6. Polity
+    consolidate_subject(
+        "राजस्थान राजव्यवस्था", 
+        "राजस्थान राजव्यवस्था", 
+        "राजस्थान राजव्यवस्था", 
+        "राजस्थान राजव्यवस्था"
+    )
 
-# 7. Hindi
-consolidate_subject(
-    "हिंदी", 
-    "हिंदी", 
-    "हिंदी", 
-    "सामान्य हिंदी"
-)
+    # 7. Hindi
+    consolidate_subject(
+        "हिंदी", 
+        "हिंदी", 
+        "हिंदी", 
+        "सामान्य हिंदी"
+    )
 
-# 8. English
-consolidate_subject(
-    "📝 English", 
-    "📝 English", 
-    "English", 
-    "General English"
-)
+    # 8. English
+    consolidate_subject(
+        "📝 English", 
+        "📝 English", 
+        "English", 
+        "General English"
+    )
 
-print("\n--- ALL SUBJECT CONSOLIDATION COMPLETED SUCCESSFULLY! ---")
+    print("\n--- ALL SUBJECT CONSOLIDATION COMPLETED SUCCESSFULLY! ---")
