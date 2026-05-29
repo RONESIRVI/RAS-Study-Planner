@@ -17,14 +17,9 @@ def get_day_suffix(day):
     return {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
 
 def create_pillar_schedule_image(tasks_data):
-    # Copy logo from assets to output folder for relative path loading in Chrome
-    logo_src = os.path.join("assets", "Gemini_Generated_Image.png")
-    logo_dest = os.path.join(BASE_DIR, "logo.png")
-    if os.path.exists(logo_src):
-        try:
-            shutil.copy2(logo_src, logo_dest)
-        except Exception as e:
-            print(f"Error copying logo: {e}")
+    # Use absolute file:// URL so Chrome headless can always load it
+    logo_abs_path = os.path.abspath(os.path.join("assets", "Gemini_Generated_Image.png"))
+    logo_file_url = "file:///" + logo_abs_path.replace("\\", "/")
 
     # Date formatting logic matching DATE.jpg
     target_date = datetime.now() + timedelta(days=1)
@@ -183,12 +178,13 @@ def create_pillar_schedule_image(tasks_data):
             }}
 
             .logo-img {{
-                width: 56px;
-                height: 56px;
-                object-fit: contain;
-                border-radius: 50%;
-                border: 2px solid rgba(255, 255, 255, 0.1);
-                box-shadow: 0 4px 12px rgba(0, 242, 254, 0.15);
+                width: 80px;
+                height: 80px;
+                object-fit: cover;
+                border-radius: 20px;
+                border: 2px solid rgba(0, 210, 255, 0.35);
+                box-shadow: 0 6px 24px rgba(0, 242, 254, 0.25);
+                background: rgba(255,255,255,0.04);
             }}
 
             .logo-text {{
@@ -452,7 +448,7 @@ def create_pillar_schedule_image(tasks_data):
         <div class="container">
             <header>
                 <div class="logo-area">
-                    <img class="logo-img" src="logo.png" alt="Logo">
+                    <img class="logo-img" src="{logo_file_url}" alt="Logo">
                     <div class="logo-text">
                         <h1>AIR-01 RAS MENTORSHIP</h1>
                         <p>Daily Planner & Task Tracker</p>
