@@ -100,7 +100,7 @@ def send_evening_reminder():
         </ul>
 
         <div style="margin: 30px 0; padding: 20px; background: #f8fafc; border-left: 4px solid #f59e0b; border-radius: 4px; font-style: italic;">
-            "तैयारी करने में विफल रहने का मतलब है विफल होने की तैयारी करना।"
+            "Your limitation- it's only your imagination."<br>-Anonymous
         </div>
         """
     else:
@@ -128,7 +128,7 @@ def send_evening_reminder():
         </ul>
 
         <div style="margin: 30px 0; padding: 20px; background: #f8fafc; border-left: 4px solid #00d2ff; border-radius: 4px; font-style: italic;">
-            "अनुशासन ही लक्ष्य और उपलब्धि के बीच का पुल है।"
+            "Your limitation- it's only your imagination."<br>-Anonymous
         </div>
         """
 
