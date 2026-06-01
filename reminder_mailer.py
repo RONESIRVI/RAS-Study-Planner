@@ -70,9 +70,11 @@ def send_evening_reminder():
     msg['From'] = f"RAS Mentorship Reminder <{config['sender_email']}>"
     msg['To'] = config['recipient_email']
     
+    date_str = now.strftime('%d %B %Y')
+
     if weekend_mode and is_weekend:
-        msg['Subject'] = f"🕯️ Weekend Reflection - {now.strftime('%d %b %Y')}"
-        title = "Weekend Reflection"
+        msg['Subject'] = f"🕯️ Weekend Reflection - {date_str}"
+        title = f"🕯️ Weekend Reflection ({date_str})"
         message_body = f"""
         <p>नमस्ते,</p>
         <p>आज वीकेंड है, आशा है कि आपने अपनी पढ़ाई का रिवीज़न (Revision) अच्छे से किया होगा।</p>
@@ -97,13 +99,13 @@ def send_evening_reminder():
             </li>
         </ul>
 
-        <div style="margin: 30px 0; padding: 20px; background: #f8fafc; border-left: 4px solid #f59e0b; border-radius: 4px;">
-            <i>"तैयारी करने में विफल रहने का मतलब है विफल होने की तैयारी करना।"</i>
+        <div style="margin: 30px 0; padding: 20px; background: #f8fafc; border-left: 4px solid #f59e0b; border-radius: 4px; font-style: italic;">
+            "तैयारी करने में विफल रहने का मतलब है विफल होने की तैयारी करना।"
         </div>
         """
     else:
-        msg['Subject'] = f"📊 Daily Progress Report - {now.strftime('%d %b %Y')}"
-        title = "Daily Milestone Review"
+        msg['Subject'] = f"📊 Daily Progress Report - {date_str}"
+        title = f"📊 Daily Progress Report ({date_str})"
         message_body = f"""
         <p>नमस्ते,</p>
         <p>आशा है कि आज का आपका अध्ययन (Study Session) फलदायी रहा होगा।</p>
@@ -125,26 +127,28 @@ def send_evening_reminder():
             </li>
         </ul>
 
-        <div style="margin: 30px 0; padding: 20px; background: #f8fafc; border-left: 4px solid #00d2ff; border-radius: 4px;">
-            <i>"अनुशासन ही लक्ष्य और उपलब्धि के बीच का पुल है।"</i>
+        <div style="margin: 30px 0; padding: 20px; background: #f8fafc; border-left: 4px solid #00d2ff; border-radius: 4px; font-style: italic;">
+            "अनुशासन ही लक्ष्य और उपलब्धि के बीच का पुल है।"
         </div>
         """
 
     # Professional HTML Body
     html_content = f"""
     <html>
-    <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333;">
-        <div style="max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden;">
-            <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 30px; text-align: center; color: white;">
-                <h1 style="margin: 0; font-size: 24px; letter-spacing: 1px;">{title}</h1>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; background-color: #f8fafc; padding: 20px; margin: 0;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+            <div style="font-size: 18px; font-weight: 700; color: #1e3a8a; margin-bottom: 16px; border-bottom: 2px solid #eff6ff; padding-bottom: 12px;">
+                {title}
             </div>
-            <div style="padding: 40px; background: #ffffff;">
+            <div style="font-size: 15px; color: #334155; margin: 0 0 20px 0;">
                 {message_body}
-                <p style="margin-top: 0; font-weight: bold; color: #00d2ff;">AIR-01 RAS Automation System</p>
             </div>
-            <div style="background: #f1f5f9; padding: 15px; text-align: center; font-size: 12px; color: #64748b;">
-                यह एक स्वचालित रिमाइन्डर है। कृपया इसका उत्तर न दें।
-            </div>
+            <p style="font-size: 14px; font-weight: 600; color: #64748b; margin: 24px 0 0 0; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                AIR-01 RAS Automation System 🚀
+            </p>
+        </div>
+        <div style="max-width: 600px; margin: 12px auto 0 auto; text-align: center; font-size: 12px; color: #94a3b8;">
+            यह एक स्वचालित रिमाइन्डर है। कृपया इसका उत्तर न दें।
         </div>
     </body>
     </html>
