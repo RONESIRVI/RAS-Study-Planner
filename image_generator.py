@@ -521,7 +521,7 @@ def create_pillar_schedule_image(tasks_data):
                 <div class="logo-area">
                     <img class="logo-img" src="{logo_file_url}" alt="Logo">
                     <div class="logo-text">
-                        <h1>AIR-01 RAS MENTORSHIP</h1>
+                        <h1>RAS MENTORSHIP</h1>
                     </div>
                 </div>
                 <div class="date-badge">
@@ -573,7 +573,7 @@ def create_pillar_schedule_image(tasks_data):
             </div>
             
             <footer>
-                "consistent daily action is the secret to air-1"
+                "Small daily improvements are the key to staggering longterm results."
             </footer>
             <div class="sparkle-star"></div>
         </div>
