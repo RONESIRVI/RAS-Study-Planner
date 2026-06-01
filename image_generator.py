@@ -620,7 +620,7 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
                 text-align: center;
                 font-size: 11px;
                 letter-spacing: 3px;
-                color: #475569;
+                color: #94a3b8;
                 text-transform: uppercase;
                 margin-top: 15px;
                 z-index: 10;
