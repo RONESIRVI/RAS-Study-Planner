@@ -50,10 +50,17 @@ def send_schedule_email(attachment_paths, recipient_email, extra_msg="", custom_
         is_weekend_plan = True
 
     if is_weekend_plan:
+        sat_date = tomorrow
+        sun_date = tomorrow + timedelta(days=1)
+        if sat_date.month == sun_date.month:
+            weekend_range = f"{sat_date.strftime('%d')} & {sun_date.strftime('%d %B %Y')}"
+        else:
+            weekend_range = f"{sat_date.strftime('%d %B')} & {sun_date.strftime('%d %B %Y')}"
+
         if custom_subject:
             msg['Subject'] = custom_subject
         else:
-            msg['Subject'] = f"📅 Weekend Planner - {tomorrow.strftime('%d %b %Y')} (शनिवार एवं रविवार)"
+            msg['Subject'] = f"📅 Weekend Planner - {weekend_range} (शनिवार एवं रविवार)"
             
         html_body = f"""
         <html>
@@ -63,10 +70,10 @@ def send_schedule_email(attachment_paths, recipient_email, extra_msg="", custom_
                     RAS Aspirant,
                 </div>
                 <div style="font-size: 18px; font-weight: 700; color: #1e3a8a; margin-bottom: 16px;">
-                    📅 आपका Weekend Planner (शनिवार एवं रविवार) तैयार है
+                    📅 आपका Weekend Planner ({weekend_range}) का प्लानर तैयार है
                 </div>
                 <p style="font-size: 15px; color: #334155; margin: 0 0 16px 0;">
-                    आपका Weekend Planner (शनिवार एवं रविवार) डिज़ाइन प्रीव्यू तैयार है और संलग्न है।
+                    आपका Weekend Planner ({weekend_range}) डिज़ाइन प्रीव्यू तैयार है और संलग्न है।
                 </p>
                 <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; margin: 20px 0;">
                     <ul style="margin: 0; padding-left: 0; font-size: 15px; color: #166534; list-style-type: none;">
