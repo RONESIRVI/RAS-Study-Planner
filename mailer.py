@@ -97,20 +97,21 @@ def send_schedule_email(attachment_paths, recipient_email, extra_msg="", custom_
         </html>
         """
     else:
+        tomorrow_date_str = tomorrow.strftime('%d %B %Y')
         if custom_subject:
             msg['Subject'] = custom_subject
         else:
-            msg['Subject'] = f"RAS Adaptive Study Plan - {datetime.now().strftime('%d %b %Y')}"
+            msg['Subject'] = f"RAS Adaptive Study Plan - {tomorrow_date_str}"
 
         html_body = f"""
         <html>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; background-color: #f8fafc; padding: 20px; margin: 0;">
             <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
                 <div style="font-size: 18px; font-weight: 700; color: #1e3a8a; margin-bottom: 16px;">
-                    📅 कल का RAS Study Plan उपलब्ध है
+                    📅 कल का RAS Study Plan ({tomorrow_date_str}) उपलब्ध है
                 </div>
                 <p style="font-size: 15px; color: #334155; margin: 0 0 16px 0;">
-                    आपका कल का RAS Study Plan तैयार कर दिया गया है और संलग्न है।
+                    आपका कल का यानी {tomorrow_date_str} का RAS Study Plan तैयार कर दिया गया है और संलग्न है।
                 </p>
                 <div style="margin: 24px 0; padding: 16px; background-color: #fef2f2; border-left: 4px solid #ef4444; border-radius: 6px; font-size: 15px; font-weight: 600; color: #991b1b;">
                     योजनाबद्ध तैयारी + निरंतर प्रयास = RAS में सफलता {extra_msg}
