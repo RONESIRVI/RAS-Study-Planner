@@ -2,8 +2,8 @@ name: Daily RAS Study Plan
 
 on:
   schedule:
-    - cron: '17 22 * * *'  # 03:47 AM IST (Morning Plan)
-    - cron: '43 7 * * *'   # 01:13 PM IST (Evening Reminder)
+    - cron: '59 11 * * 0-5'  # 05:29 PM IST (Sunday to Friday Plan - No Sat)
+    - cron: '43 7 * * *'     # 01:13 PM IST (Evening Reminder)
   workflow_dispatch:
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
           sudo apt-get install -y google-chrome-stable fonts-indic fonts-noto-core
       
       - name: Morning Run (Plan)
-        if: github.event.schedule == '17 22 * * *' || github.event_name == 'workflow_dispatch'
+        if: github.event.schedule == '59 11 * * 0-5' || github.event_name == 'workflow_dispatch'
         env:
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
           SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
