@@ -76,7 +76,7 @@ def send_evening_reminder():
         msg['Subject'] = f"🕯️ Weekend Reflection - {date_str}"
         title = f"🕯️ Weekend Reflection ({date_str})"
         message_body = f"""
-        <p>नमस्ते,</p>
+        <p>RAS Aspirant,</p>
         <p>आज वीकेंड है, आशा है कि आपने अपनी पढ़ाई का रिवीज़न (Revision) अच्छे से किया होगा।</p>
         <p><b>वीकेंड टास्क:</b></p>
         <p>1. पिछले सप्ताह के छूटे हुए टॉपिक्स (Backlogs) को चेक करें।<br>
@@ -107,7 +107,7 @@ def send_evening_reminder():
         msg['Subject'] = f"📊 Daily Progress Report - {date_str}"
         title = f"📊 Daily Progress Report ({date_str})"
         message_body = f"""
-        <p>नमस्ते,</p>
+        <p>RAS Aspirant,</p>
         <p>आशा है कि आज का आपका अध्ययन (Study Session) फलदायी रहा होगा।</p>
         <p>कल जो प्लान आज के लिए भेजा गया था, उसके अनुसार आज के कार्य निम्नलिखित हैं। कृपया इन्हें पूरा करने के बाद अपनी <b>Master Tracker Sheet</b> में स्टेटस को <b>'done'</b> या <b>'ok'</b> मार्क करना न भूलें:</p>
         
@@ -144,7 +144,7 @@ def send_evening_reminder():
                 {message_body}
             </div>
             <p style="font-size: 14px; font-weight: 600; color: #64748b; margin: 24px 0 0 0; border-top: 1px solid #e2e8f0; padding-top: 16px;">
-                AIR-01 RAS Automation System 🚀
+                Automation System 🚀
             </p>
         </div>
         <div style="max-width: 600px; margin: 12px auto 0 auto; text-align: center; font-size: 12px; color: #94a3b8;">
