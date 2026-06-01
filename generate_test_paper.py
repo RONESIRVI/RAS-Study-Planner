@@ -63,7 +63,7 @@ def split_bilingual(text):
         
     return text, ""
 
-def generate_test_from_excel(excel_path, docx_path, sheet_name=None):
+def generate_test_from_excel(excel_path, docx_path, sheet_name=None, topic_filter=None):
     print(f"Reading questions from Excel: {excel_path}")
     if not os.path.exists(excel_path):
         print(f"[ERROR] Excel file not found at: {excel_path}")
@@ -76,6 +76,8 @@ def generate_test_from_excel(excel_path, docx_path, sheet_name=None):
     
     ws = wb[sheet_name]
     print(f"Using sheet: {sheet_name}")
+    if topic_filter:
+        print(f"Applying Topic/Sub-Topic filter: '{topic_filter}'")
     
     # Extract questions data from rows
     questions = []
@@ -88,6 +90,13 @@ def generate_test_from_excel(excel_path, docx_path, sheet_name=None):
         if not row or len(row) < 9: continue
         q_val = row[q_col]
         if not q_val: continue
+        
+        # Topic Filter check
+        if topic_filter:
+            topic_val = str(row[1]) if row[1] is not None else ""
+            subtopic_val = str(row[2]) if row[2] is not None else ""
+            if topic_filter.lower() not in topic_val.lower() and topic_filter.lower() not in subtopic_val.lower():
+                continue
         
         # Options
         opts = [row[opt_start], row[opt_start+1], row[opt_start+2], row[opt_start+3]]
@@ -335,10 +344,13 @@ if __name__ == "__main__":
     import sys
     excel_p = r"R:\Final_PYQ_\Modal Qus Paper.xlsx"
     docx_p = r"R:\Final_PYQ_\Modal Qus Paper.docx"
+    topic_f = None
     
     if len(sys.argv) > 1:
         excel_p = sys.argv[1]
     if len(sys.argv) > 2:
         docx_p = sys.argv[2]
+    if len(sys.argv) > 3:
+        topic_f = sys.argv[3]
         
-    generate_test_from_excel(excel_p, docx_p)
+    generate_test_from_excel(excel_p, docx_p, topic_filter=topic_f)
