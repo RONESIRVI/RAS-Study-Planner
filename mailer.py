@@ -35,7 +35,7 @@ def send_schedule_email(attachment_paths, recipient_email, extra_msg="", custom_
                 recipient_email = recipient_email or config.get("recipient_email")
 
     if not sender_email or not sender_password:
-        print("❌ Error: Email credentials missing. (Check GitHub Secrets or config.json)")
+        print("[ERROR] Email credentials missing. (Check GitHub Secrets or config.json)")
         return
 
     # Create Message
@@ -72,9 +72,9 @@ def send_schedule_email(attachment_paths, recipient_email, extra_msg="", custom_
         server.login(sender_email, sender_password)
         server.send_message(msg)
         server.quit()
-        print(f"✅ Email successfully sent to {recipient_email}")
+        print(f"[SUCCESS] Email successfully sent to {recipient_email}")
     except Exception as e:
-        print(f"❌ SMTP Error: {e}")
+        print(f"[ERROR] SMTP Error: {e}")
 
 def send_email(attachments, extra_msg="", custom_subject=None):
     # Main entry point for automation_main.py

@@ -16,13 +16,14 @@ def get_day_suffix(day):
         return "th"
     return {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
 
-def create_pillar_schedule_image(tasks_data):
+def create_pillar_schedule_image(tasks_data, target_date=None):
     # Use absolute file:// URL so Chrome headless can always load it
     logo_abs_path = os.path.abspath(os.path.join("assets", "Gemini_Generated_Image.png"))
     logo_file_url = "file:///" + logo_abs_path.replace("\\", "/")
 
     # Date formatting logic matching DATE.jpg
-    target_date = datetime.now() + timedelta(days=1)
+    if target_date is None:
+        target_date = datetime.now() + timedelta(days=1)
     day_name = target_date.strftime('%A').upper()
     day_num = target_date.day
     suffix = get_day_suffix(day_num)
@@ -31,6 +32,43 @@ def create_pillar_schedule_image(tasks_data):
 
     day_blocks_html = "".join([f'<span class="letter-block">{char}</span>' for char in day_name])
     date_html = f'<span class="date-num">{day_num}</span><span class="date-suffix">{suffix}</span><span class="date-month">{month_name}</span>'
+
+    # Check if target plan date is Saturday (meaning we are generating combined weekend plan)
+    is_weekend_plan = (target_date.weekday() == 5)
+    weekend_banner_html = ""
+    if is_weekend_plan:
+        sunday_date = target_date + timedelta(days=1)
+        sat_num = target_date.day
+        sun_num = sunday_date.day
+        sat_suffix = get_day_suffix(sat_num)
+        sun_suffix = get_day_suffix(sun_num)
+        month_name = target_date.strftime('%B').upper()
+        year_name = target_date.strftime('%Y')
+        
+        if target_date.strftime('%B') != sunday_date.strftime('%B'):
+            sun_month = sunday_date.strftime('%B').upper()
+            weekend_dates = f"{sat_num}{sat_suffix} {month_name} & {sun_num}{sun_suffix} {sun_month} {year_name}"
+        else:
+            weekend_dates = f"{sat_num}{sat_suffix} & {sun_num}{sun_suffix} {month_name} {year_name}"
+            
+        weekend_banner_html = f"""
+        <div class="weekend-banner">
+            <div class="announcing-badge-container">
+                <span class="badge-line"></span>
+                <div class="announcing-badge">ANNOUNCING</div>
+                <span class="badge-line"></span>
+            </div>
+            <div class="weekend-title">
+                <span class="title-week">Week</span><span class="title-end">end</span>
+            </div>
+            <div class="divider-curve-container">
+                <div class="divider-curve"></div>
+            </div>
+            <div class="mentoring-programme">
+                Saturday & Sunday - {weekend_dates}
+            </div>
+        </div>
+        """
 
     # Prepare Content (Dynamic Loops)
     classes_html = ""
@@ -322,6 +360,96 @@ def create_pillar_schedule_image(tasks_data):
                 margin-top: 1px;
             }}
 
+            /* Weekend Banner Styles matching photo_2026-06-01_14-03-21 layout */
+            .weekend-banner {{
+                margin-top: 15px;
+                margin-bottom: 5px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+                z-index: 10;
+                box-sizing: border-box;
+            }}
+
+            .announcing-badge-container {{
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                gap: 15px;
+            }}
+
+            .badge-line {{
+                flex-grow: 1;
+                height: 1px;
+                background: linear-gradient(90deg, transparent, rgba(236, 72, 153, 0.4), transparent);
+            }}
+
+            .announcing-badge {{
+                border: 1.5px solid #ec4899;
+                border-radius: 8px;
+                padding: 3px 18px;
+                font-family: 'Outfit', sans-serif;
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 3px;
+                color: #ffffff;
+                background: rgba(236, 72, 153, 0.1);
+                box-shadow: 0 0 10px rgba(236, 72, 153, 0.15);
+            }}
+
+            .weekend-title {{
+                font-size: 42px;
+                font-weight: 800;
+                letter-spacing: 1px;
+                margin: 4px 0 2px 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                text-transform: none; /* Keep capitalization exactly as input */
+            }}
+
+            .title-week {{
+                color: #00d2ff;
+                text-shadow: 0 0 15px rgba(0, 210, 255, 0.25);
+            }}
+
+            .title-end {{
+                color: #ec4899;
+                text-shadow: 0 0 15px rgba(236, 72, 153, 0.25);
+                margin-left: 2px;
+            }}
+
+            .divider-curve-container {{
+                width: 70%;
+                display: flex;
+                justify-content: center;
+                margin-bottom: 6px;
+            }}
+
+            .divider-curve {{
+                width: 100%;
+                height: 2px;
+                background: linear-gradient(90deg, transparent, #ec4899, #00d2ff, transparent);
+                border-radius: 50%;
+            }}
+
+            .mentoring-programme {{
+                background: linear-gradient(90deg, rgba(30, 64, 175, 0.6) 0%, rgba(30, 58, 138, 0.8) 50%, rgba(30, 64, 175, 0.6) 100%);
+                border: 1px solid rgba(59, 130, 246, 0.3);
+                border-radius: 4px;
+                padding: 5px 30px;
+                font-size: 12px;
+                font-weight: 700;
+                letter-spacing: 2px;
+                color: #ffffff;
+                text-align: center;
+                text-transform: uppercase;
+                box-shadow: 0 4px 15px rgba(30, 64, 175, 0.2);
+                width: 60%;
+            }}
+
             .grid {{
                 display: grid;
                 grid-template-columns: repeat(4, 1fr);
@@ -537,6 +665,8 @@ def create_pillar_schedule_image(tasks_data):
                     </div>
                 </div>
             </header>
+            
+            {weekend_banner_html}
             
             <div class="grid">
                 <div class="card card-classes">
