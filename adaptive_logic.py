@@ -20,9 +20,10 @@ def get_tracker_path():
         pass
     return target_path
 
-def get_adaptive_tasks():
-    # The planner generates a plan for tomorrow, so look up revisions scheduled for tomorrow
-    target_date = (datetime.now() + timedelta(days=1)).date()
+def get_adaptive_tasks(target_date=None):
+    if target_date is None:
+        # The planner generates a plan for tomorrow, so look up revisions scheduled for tomorrow
+        target_date = (datetime.now() + timedelta(days=1)).date()
     tracker_file = get_tracker_path()
     wb = openpyxl.load_workbook(tracker_file, data_only=True, read_only=True)
     sheet_names = wb.sheetnames
