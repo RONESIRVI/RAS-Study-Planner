@@ -3,7 +3,7 @@ name: Daily RAS Study Plan
 on:
   schedule:
     - cron: '59 11 * * 0-5'  # 05:29 PM IST (Sunday to Friday Plan - No Sat)
-    - cron: '43 7 * * *'     # 01:13 PM IST (Evening Reminder)
+    - cron: '30 11 * * *'     # 05:00 PM IST (Evening Reminder)
   workflow_dispatch:
 
 jobs:

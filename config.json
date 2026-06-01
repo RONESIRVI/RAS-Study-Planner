@@ -6,7 +6,7 @@
     "recipient_email": "figuring.cse@gmail.com",
     "weekend_mode": true,
     "weekday_morning_time": "17:29",
-    "weekday_evening_time": "13:00",
+    "weekday_evening_time": "17:00",
     "weekend_morning_time": "17:29",
-    "weekend_evening_time": "13:00"
+    "weekend_evening_time": "17:00"
 }
