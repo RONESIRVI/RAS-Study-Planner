@@ -91,13 +91,21 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
     for item in tasks_data:
         if item.get('task') == 'REVISION':
             revisions = item.get('revisions', [])
-            for rev in revisions:
+            visible_revisions = revisions[:4]
+            for rev in visible_revisions:
                 revisions_html += f"""
                 <li>
                     <div class="item-border"></div>
                     <strong>{rev['subject']}</strong>
                     <small>{rev['topic']}</small>
                     <div class="status-dot"></div>
+                </li>
+                """
+            if len(revisions) > 4:
+                remaining = len(revisions) - 4
+                revisions_html += f"""
+                <li style="background: rgba(255, 255, 255, 0.02); border-style: dashed; padding: 10px; text-align: center; justify-content: center; min-height: auto;">
+                    <small style="color: #94a3b8; font-style: italic;">+ {remaining} और पेंडिंग कार्य (ईमेल देखें)</small>
                 </li>
                 """
             break
@@ -123,16 +131,24 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
     for item in tasks_data:
         if item.get('task') == 'REVISION':
             revisions = item.get('revisions', [])
-            for rev in revisions:
-                if "Same Day Rev" not in rev.get('topic', ''):
-                    mock_test_html += f"""
-                    <li>
-                        <div class="item-border"></div>
-                        <strong>{rev['subject']}</strong>
-                        <small>{rev['topic']}</small>
-                        <div class="status-dot"></div>
-                    </li>
-                    """
+            mock_items = [r for r in revisions if "Same Day Rev" not in r.get('topic', '')]
+            visible_mock = mock_items[:4]
+            for rev in visible_mock:
+                mock_test_html += f"""
+                <li>
+                    <div class="item-border"></div>
+                    <strong>{rev['subject']}</strong>
+                    <small>{rev['topic']}</small>
+                    <div class="status-dot"></div>
+                </li>
+                """
+            if len(mock_items) > 4:
+                remaining = len(mock_items) - 4
+                mock_test_html += f"""
+                <li style="background: rgba(255, 255, 255, 0.02); border-style: dashed; padding: 10px; text-align: center; justify-content: center; min-height: auto;">
+                    <small style="color: #94a3b8; font-style: italic;">+ {remaining} और पेंडिंग टेस्ट (ईमेल देखें)</small>
+                </li>
+                """
             break
 
     # Empty State Handlers
