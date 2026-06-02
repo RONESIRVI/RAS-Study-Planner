@@ -91,7 +91,7 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
     for item in tasks_data:
         if item.get('task') == 'REVISION':
             revisions = item.get('revisions', [])
-            visible_revisions = revisions[:4]
+            visible_revisions = revisions[:6]
             for rev in visible_revisions:
                 revisions_html += f"""
                 <li>
@@ -101,8 +101,8 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
                     <div class="status-dot"></div>
                 </li>
                 """
-            if len(revisions) > 4:
-                remaining = len(revisions) - 4
+            if len(revisions) > 6:
+                remaining = len(revisions) - 6
                 revisions_html += f"""
                 <li style="background: rgba(255, 255, 255, 0.02); border-style: dashed; padding: 10px; text-align: center; justify-content: center; min-height: auto;">
                     <small style="color: #94a3b8; font-style: italic;">+ {remaining} और पेंडिंग कार्य (ईमेल देखें)</small>
@@ -132,7 +132,7 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
         if item.get('task') == 'REVISION':
             revisions = item.get('revisions', [])
             mock_items = [r for r in revisions if "Same Day Rev" not in r.get('topic', '')]
-            visible_mock = mock_items[:4]
+            visible_mock = mock_items[:6]
             for rev in visible_mock:
                 mock_test_html += f"""
                 <li>
@@ -142,8 +142,8 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
                     <div class="status-dot"></div>
                 </li>
                 """
-            if len(mock_items) > 4:
-                remaining = len(mock_items) - 4
+            if len(mock_items) > 6:
+                remaining = len(mock_items) - 6
                 mock_test_html += f"""
                 <li style="background: rgba(255, 255, 255, 0.02); border-style: dashed; padding: 10px; text-align: center; justify-content: center; min-height: auto;">
                     <small style="color: #94a3b8; font-style: italic;">+ {remaining} और पेंडिंग टेस्ट (ईमेल देखें)</small>
