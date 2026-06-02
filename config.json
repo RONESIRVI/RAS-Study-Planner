@@ -5,8 +5,8 @@
     "smtp_port": 587,
     "recipient_email": "figuring.cse@gmail.com",
     "weekend_mode": true,
-    "weekday_morning_time": "17:29",
-    "weekday_evening_time": "17:00",
-    "weekend_morning_time": "17:29",
-    "weekend_evening_time": "17:00"
+    "weekday_morning_time": "17:26",
+    "weekday_evening_time": "17:02",
+    "weekend_morning_time": "17:26",
+    "weekend_evening_time": "17:02"
 }
