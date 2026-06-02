@@ -53,7 +53,10 @@ def get_adaptive_tasks(target_date=None):
                 if d_idx >= len(row): continue
                 raw_val = row[d_idx]
                 parsed_date = None
-                if isinstance(raw_val, datetime): parsed_date = raw_val.date()
+                if isinstance(raw_val, datetime):
+                    parsed_date = raw_val.date()
+                elif isinstance(raw_val, date):
+                    parsed_date = raw_val
                 elif isinstance(raw_val, str) and "/" in raw_val:
                     for fmt in ["%d/%m/%Y", "%m/%d/%Y"]:
                         try:
@@ -61,11 +64,13 @@ def get_adaptive_tasks(target_date=None):
                             break
                         except: pass
                 
-                if parsed_date == target_date:
+                if parsed_date and parsed_date <= target_date:
                     done_val = str(row[d_idx+1]).strip().lower() if d_idx+1 < len(row) else ""
-                    if done_val != "done":
+                    if done_val not in ["done", "ok"]:
                         label = f"R{(d_idx-1)//2}" if d_idx < 11 else "Final"
-                        revisions.append({'subject': sub, 'topic': f"{top} ({label})"})
+                        delay_days = (target_date - parsed_date).days
+                        backlog_suffix = f" [Backlog: {delay_days} दिन पुराना]" if delay_days > 0 else ""
+                        revisions.append({'subject': sub, 'topic': f"{top} ({label}){backlog_suffix}"})
 
     image_data = []
     for idx, c in enumerate(classes_list):
