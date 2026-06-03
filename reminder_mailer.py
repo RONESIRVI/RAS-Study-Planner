@@ -15,11 +15,22 @@ def load_config():
     with open(config_path, 'r') as f:
         return json.load(f)
 
-def send_evening_reminder():
+def send_evening_reminder(target_date=None):
     config = load_config()
     now = datetime.now()
-    today = now.date()
-    current_day = now.strftime('%A')
+    from datetime import date
+    if target_date is None:
+        target_datetime = now
+    else:
+        if isinstance(target_date, str):
+            target_datetime = datetime.strptime(target_date.strip(), "%d-%m-%Y")
+        elif isinstance(target_date, (datetime, date)):
+            target_datetime = datetime.combine(target_date, datetime.min.time()) if not isinstance(target_date, datetime) else target_date
+        else:
+            target_datetime = target_date
+
+    today = target_datetime.date()
+    current_day = target_datetime.strftime('%A')
     is_weekend = current_day in ['Saturday', 'Sunday']
     
     if is_weekend:
@@ -29,8 +40,9 @@ def send_evening_reminder():
         
     weekend_mode = config.get("weekend_mode", True)
 
-    print(f"--- Starting Evening Reminder at {now.strftime('%Y-%m-%d %H:%M:%S')} ---")
+    print(f"--- Starting Evening Reminder for Target Date: {today} ---")
     print(f"Scheduled Time: {scheduled_time} | Weekend Mode: {'ON' if weekend_mode else 'OFF'}")
+
 
     # Fetch today's tasks to display in the email
     try:
@@ -70,7 +82,7 @@ def send_evening_reminder():
     msg['From'] = f"RAS Mentorship Reminder <{config['sender_email']}>"
     msg['To'] = config['recipient_email']
     
-    date_str = now.strftime('%d %B %Y')
+    date_str = target_datetime.strftime('%d %B %Y')
 
     if weekend_mode and is_weekend:
         msg['Subject'] = f"🕯️ Weekend Reflection - {date_str}"
