@@ -22,14 +22,23 @@ def get_day_suffix(day):
 
 def create_pillar_schedule_image(tasks_data, target_date=None):
     def get_compact_class(count):
-        if count >= 12:
-            return "super-compact-3col"
+        if is_weekend_plan:
+            if count >= 10:
+                return "super-compact-3col"
+            elif count > 5:
+                return "super-compact"
+            elif count > 3:
+                return "compact"
+            return ""
+        else:
+            if count >= 12:
+                return "super-compact-3col"
+            elif count > 7:
+                return "super-compact"
+            elif count > 4:
+                return "compact"
+            return ""
 
-        elif count > 7:
-            return "super-compact"
-        elif count > 4:
-            return "compact"
-        return ""
 
     # Use absolute file:// URL so Chrome headless can always load it
     logo_abs_path = os.path.abspath(os.path.join("assets", "Gemini_Generated_Image.png"))
@@ -727,6 +736,26 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
                 z-index: 10;
             }}
 
+            .container.weekend-mode {{
+                padding: 25px 40px;
+            }}
+            .container.weekend-mode header {{
+                padding-bottom: 12px;
+            }}
+            .container.weekend-mode .grid {{
+                margin-top: 15px;
+                margin-bottom: 5px;
+            }}
+            .container.weekend-mode .card {{
+                padding: 16px;
+            }}
+            .container.weekend-mode .card h3 {{
+                margin-bottom: 12px;
+            }}
+            .container.weekend-mode footer {{
+                margin-top: 5px;
+            }}
+
             .sparkle-star {{
                 position: absolute;
                 bottom: 25px;
@@ -745,7 +774,7 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
         <div class="glow-1"></div>
         <div class="glow-2"></div>
         
-        <div class="container">
+        <div class="container {'weekend-mode' if is_weekend_plan else ''}">
             <header>
                 <div class="logo-area">
                     <img class="logo-img" src="{logo_file_url}" alt="Logo">
