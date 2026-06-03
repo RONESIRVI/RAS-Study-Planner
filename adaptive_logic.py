@@ -64,7 +64,7 @@ def get_adaptive_tasks(target_date=None):
                             break
                         except: pass
                 
-                if parsed_date and parsed_date <= target_date:
+                if parsed_date and parsed_date.year > 2020 and parsed_date <= target_date:
                     done_val = str(row[d_idx+1]).strip().lower() if d_idx+1 < len(row) else ""
                     if done_val not in ["done", "ok"]:
                         label = f"R{(d_idx-1)//2}" if d_idx < 11 else "Final"

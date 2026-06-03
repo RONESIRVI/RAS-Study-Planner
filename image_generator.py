@@ -6,10 +6,14 @@ from datetime import datetime, timedelta
 # Directory for automation
 BASE_DIR = "output"
 os.makedirs(BASE_DIR, exist_ok=True)
-if os.environ.get("GITHUB_ACTIONS"):
-    hti = Html2Image(output_path=BASE_DIR, custom_flags=['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--headless'])
-else:
-    hti = Html2Image(output_path=BASE_DIR)
+custom_flags = [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-dev-shm-usage',
+    '--headless',
+    '--force-device-scale-factor=6'
+]
+hti = Html2Image(output_path=BASE_DIR, custom_flags=custom_flags)
 
 def get_day_suffix(day):
     if 11 <= day <= 13:
@@ -18,8 +22,9 @@ def get_day_suffix(day):
 
 def create_pillar_schedule_image(tasks_data, target_date=None):
     def get_compact_class(count):
-        if count > 12:
+        if count >= 12:
             return "super-compact-3col"
+
         elif count > 7:
             return "super-compact"
         elif count > 4:
@@ -203,11 +208,12 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
 
             body {{
                 margin: 0;
+
                 padding: 0;
                 width: 1280px;
                 height: 720px;
-                zoom: 6.0;
                 background: var(--bg-gradient);
+
                 font-family: 'Outfit', 'Noto Sans Devanagari', 'Mangal', 'Arial Unicode MS', 'Nirmala UI', sans-serif;
                 color: #e2e8f0;
                 overflow: hidden;
@@ -806,6 +812,7 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
     </html>
     """
     
-    # Generate Image with dynamic height handling
-    hti.screenshot(html_str=html_content, save_as='Pillar_Schedule.png', size=(7680, 4320))
+    # Generate Image with native high-DPI scaling
+    hti.screenshot(html_str=html_content, save_as='Pillar_Schedule.png', size=(1280, 720))
+
     return os.path.join(BASE_DIR, "Pillar_Schedule.png")
