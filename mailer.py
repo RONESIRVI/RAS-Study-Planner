@@ -14,7 +14,7 @@ POSSIBLE_CONFIGS = [
     r'R:\Study_Automation_System\config.json'
 ]
 
-def send_schedule_email(attachment_paths, recipient_email, extra_msg="", custom_subject=None):
+def send_schedule_email(attachment_paths, recipient_email, extra_msg="", custom_subject=None, target_date=None):
     # ... (Environment variables logic) ...
     sender_email = os.environ.get("SENDER_EMAIL")
     sender_password = os.environ.get("SENDER_PASSWORD")
@@ -43,8 +43,19 @@ def send_schedule_email(attachment_paths, recipient_email, extra_msg="", custom_
     msg['From'] = f"RAS Mentorship System <{sender_email}>"
     msg['To'] = recipient_email
     
-    tomorrow = datetime.now() + timedelta(days=1)
+    from datetime import date
+    if target_date is None:
+        tomorrow = datetime.now() + timedelta(days=1)
+    else:
+        if isinstance(target_date, str):
+            tomorrow = datetime.strptime(target_date.strip(), "%d-%m-%Y")
+        elif isinstance(target_date, (datetime, date)):
+            tomorrow = datetime.combine(target_date, datetime.min.time()) if not isinstance(target_date, datetime) else target_date
+        else:
+            tomorrow = target_date
+            
     is_weekend_plan = (tomorrow.weekday() == 5)
+
     
     if custom_subject and ("Weekend" in custom_subject or "वीकेंड" in custom_subject or "Weekend Planner" in custom_subject):
         is_weekend_plan = True
@@ -150,6 +161,7 @@ def send_schedule_email(attachment_paths, recipient_email, extra_msg="", custom_
     except Exception as e:
         print(f"[ERROR] SMTP Error: {e}")
 
-def send_email(attachments, extra_msg="", custom_subject=None):
+def send_email(attachments, extra_msg="", custom_subject=None, target_date=None):
     # Main entry point for automation_main.py
-    send_schedule_email(attachments, "figuring.cse@gmail.com", extra_msg, custom_subject)
+    send_schedule_email(attachments, "figuring.cse@gmail.com", extra_msg, custom_subject, target_date=target_date)
+
