@@ -18,7 +18,9 @@ def get_day_suffix(day):
 
 def create_pillar_schedule_image(tasks_data, target_date=None):
     def get_compact_class(count):
-        if count > 7:
+        if count > 12:
+            return "super-compact-3col"
+        elif count > 7:
             return "super-compact"
         elif count > 4:
             return "compact"
@@ -548,17 +550,19 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
                 display: flex;
                 flex-direction: column;
                 gap: 12px;
-                overflow-y: auto;
+                overflow: hidden;
                 flex-grow: 1;
             }}
 
             /* Compact list items when many are present */
             .card ul.compact {{
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
                 gap: 8px;
             }}
             .card ul.compact li {{
                 padding: 8px 12px;
-                padding-right: 32px;
+                padding-right: 28px;
                 gap: 2px;
                 border-radius: 8px;
             }}
@@ -567,18 +571,20 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
                 bottom: 8px;
             }}
             .card ul.compact li strong {{
-                font-size: 12.5px;
+                font-size: 11.5px;
             }}
             .card ul.compact li small {{
-                font-size: 10px;
+                font-size: 9.5px;
             }}
 
             .card ul.super-compact {{
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
                 gap: 4px;
             }}
             .card ul.super-compact li {{
                 padding: 4px 8px;
-                padding-right: 24px;
+                padding-right: 20px;
                 gap: 1px;
                 border-radius: 6px;
             }}
@@ -587,15 +593,42 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
                 bottom: 4px;
             }}
             .card ul.super-compact li strong {{
-                font-size: 11px;
+                font-size: 9.5px;
             }}
             .card ul.super-compact li small {{
-                font-size: 9px;
+                font-size: 8px;
             }}
             .card ul.super-compact li .status-dot {{
-                width: 6px;
-                height: 6px;
-                right: 10px;
+                width: 5px;
+                height: 5px;
+                right: 6px;
+            }}
+
+            .card ul.super-compact-3col {{
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 4px;
+            }}
+            .card ul.super-compact-3col li {{
+                padding: 4px 6px;
+                padding-right: 18px;
+                gap: 1px;
+                border-radius: 6px;
+            }}
+            .card ul.super-compact-3col li .item-border {{
+                top: 4px;
+                bottom: 4px;
+            }}
+            .card ul.super-compact-3col li strong {{
+                font-size: 8.5px;
+            }}
+            .card ul.super-compact-3col li small {{
+                font-size: 7.5px;
+            }}
+            .card ul.super-compact-3col li .status-dot {{
+                width: 4px;
+                height: 4px;
+                right: 4px;
             }}
 
             .card li {{
