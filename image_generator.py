@@ -17,6 +17,13 @@ def get_day_suffix(day):
     return {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
 
 def create_pillar_schedule_image(tasks_data, target_date=None):
+    def get_compact_class(count):
+        if count > 7:
+            return "super-compact"
+        elif count > 4:
+            return "compact"
+        return ""
+
     # Use absolute file:// URL so Chrome headless can always load it
     logo_abs_path = os.path.abspath(os.path.join("assets", "Gemini_Generated_Image.png"))
     logo_file_url = "file:///" + logo_abs_path.replace("\\", "/")
@@ -72,11 +79,13 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
 
     # Prepare Content (Dynamic Loops)
     classes_html = ""
+    classes_count = 0
     for task in tasks_data:
         sub = task.get('subject', '')
         top = task.get('topic', '')
         # Only add if it's a real class, not a placeholder
         if sub and '[' not in sub and 'task' in task and 'CLASSES' in task['task']:
+            classes_count += 1
             classes_html += f"""
             <li>
                 <div class="item-border"></div>
@@ -87,12 +96,13 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
             """
             
     revisions_html = ""
+    revisions_count = 0
     # Smart Find: Search for the Revision task in the list
     for item in tasks_data:
         if item.get('task') == 'REVISION':
             revisions = item.get('revisions', [])
-            visible_revisions = revisions[:6]
-            for rev in visible_revisions:
+            revisions_count = len(revisions)
+            for rev in revisions:
                 revisions_html += f"""
                 <li>
                     <div class="item-border"></div>
@@ -101,22 +111,17 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
                     <div class="status-dot"></div>
                 </li>
                 """
-            if len(revisions) > 6:
-                remaining = len(revisions) - 6
-                revisions_html += f"""
-                <li style="background: rgba(255, 255, 255, 0.02); border-style: dashed; padding: 10px; text-align: center; justify-content: center; min-height: auto;">
-                    <small style="color: #94a3b8; font-style: italic;">+ {remaining} और पेंडिंग कार्य (ईमेल देखें)</small>
-                </li>
-                """
             break
 
     # Prepare PYQ Test Section (All classes)
     pyq_topics_html = ""
+    pyq_count = 0
     for task in tasks_data:
         if 'CLASSES' in task.get('task', ''):
             sub = task.get('subject', '')
             top = task.get('topic', '')
             if sub and '[' not in sub:
+                pyq_count += 1
                 pyq_topics_html += f"""
                 <li>
                     <div class="item-border"></div>
@@ -128,25 +133,19 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
 
     # Prepare Mock Test Section (Only Spaced Repetition revisions, not Same Day Rev)
     mock_test_html = ""
+    mock_count = 0
     for item in tasks_data:
         if item.get('task') == 'REVISION':
             revisions = item.get('revisions', [])
             mock_items = [r for r in revisions if "Same Day Rev" not in r.get('topic', '')]
-            visible_mock = mock_items[:6]
-            for rev in visible_mock:
+            mock_count = len(mock_items)
+            for rev in mock_items:
                 mock_test_html += f"""
                 <li>
                     <div class="item-border"></div>
                     <strong>{rev['subject']}</strong>
                     <small>{rev['topic']}</small>
                     <div class="status-dot"></div>
-                </li>
-                """
-            if len(mock_items) > 6:
-                remaining = len(mock_items) - 6
-                mock_test_html += f"""
-                <li style="background: rgba(255, 255, 255, 0.02); border-style: dashed; padding: 10px; text-align: center; justify-content: center; min-height: auto;">
-                    <small style="color: #94a3b8; font-style: italic;">+ {remaining} और पेंडिंग टेस्ट (ईमेल देखें)</small>
                 </li>
                 """
             break
@@ -204,7 +203,8 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
                 margin: 0;
                 padding: 0;
                 width: 1280px;
-                height: 800px;
+                height: 720px;
+                zoom: 6.0;
                 background: var(--bg-gradient);
                 font-family: 'Outfit', 'Noto Sans Devanagari', 'Mangal', 'Arial Unicode MS', 'Nirmala UI', sans-serif;
                 color: #e2e8f0;
@@ -478,8 +478,8 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
             }}
 
             .card {{
-                background: var(--glass-bg);
-                backdrop-filter: blur(25px) saturate(120%);
+                background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+                backdrop-filter: blur(10px);
                 border: 1px solid var(--glass-border);
                 border-radius: 24px;
                 padding: 24px;
@@ -550,6 +550,52 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
                 gap: 12px;
                 overflow-y: auto;
                 flex-grow: 1;
+            }}
+
+            /* Compact list items when many are present */
+            .card ul.compact {{
+                gap: 8px;
+            }}
+            .card ul.compact li {{
+                padding: 8px 12px;
+                padding-right: 32px;
+                gap: 2px;
+                border-radius: 8px;
+            }}
+            .card ul.compact li .item-border {{
+                top: 8px;
+                bottom: 8px;
+            }}
+            .card ul.compact li strong {{
+                font-size: 12.5px;
+            }}
+            .card ul.compact li small {{
+                font-size: 10px;
+            }}
+
+            .card ul.super-compact {{
+                gap: 4px;
+            }}
+            .card ul.super-compact li {{
+                padding: 4px 8px;
+                padding-right: 24px;
+                gap: 1px;
+                border-radius: 6px;
+            }}
+            .card ul.super-compact li .item-border {{
+                top: 4px;
+                bottom: 4px;
+            }}
+            .card ul.super-compact li strong {{
+                font-size: 11px;
+            }}
+            .card ul.super-compact li small {{
+                font-size: 9px;
+            }}
+            .card ul.super-compact li .status-dot {{
+                width: 6px;
+                height: 6px;
+                right: 10px;
             }}
 
             .card li {{
@@ -688,31 +734,31 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
                 <div class="card card-classes">
                     <div class="card-header cls-h">CLASSES</div>
                     <h3>DAILY FOCUS</h3>
-                    <ul>
+                    <ul class="{get_compact_class(classes_count)}">
                         {classes_html}
                     </ul>
                 </div>
-
+ 
                 <div class="card card-revision">
                     <div class="card-header rev-h">REVISION</div>
                     <h3>SPACED REP</h3>
-                    <ul>
+                    <ul class="{get_compact_class(revisions_count)}">
                         {revisions_html}
                     </ul>
                 </div>
-
+ 
                 <div class="card card-pyq">
                     <div class="card-header pyq-h">PYQ TEST</div>
                     <h3>ASSESSMENT</h3>
-                    <ul>
+                    <ul class="{get_compact_class(pyq_count)}">
                         {pyq_topics_html}
                     </ul>
                 </div>
-
+ 
                 <div class="card card-mock">
                     <div class="card-header mock-h">MOCK TEST</div>
                     <h3>STRENGTHEN</h3>
-                    <ul>
+                    <ul class="{get_compact_class(mock_count)}">
                         {mock_test_html}
                     </ul>
                 </div>
@@ -728,5 +774,5 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
     """
     
     # Generate Image with dynamic height handling
-    hti.screenshot(html_str=html_content, save_as='Pillar_Schedule.png', size=(1280, 800))
+    hti.screenshot(html_str=html_content, save_as='Pillar_Schedule.png', size=(7680, 4320))
     return os.path.join(BASE_DIR, "Pillar_Schedule.png")
