@@ -24,6 +24,18 @@ def get_adaptive_tasks(target_date=None):
     if target_date is None:
         # The planner generates a plan for tomorrow, so look up revisions scheduled for tomorrow
         target_date = (datetime.now() + timedelta(days=1)).date()
+        
+    from datetime import date, timedelta
+    if isinstance(target_date, datetime):
+        target_date_obj = target_date.date()
+    else:
+        target_date_obj = target_date
+
+    # If target plan is for Saturday, extend the revision search to include Sunday as well
+    revision_limit_date = target_date_obj
+    if target_date_obj.weekday() == 5:  # Saturday
+        revision_limit_date = target_date_obj + timedelta(days=1)
+
     tracker_file = get_tracker_path()
     wb = openpyxl.load_workbook(tracker_file, data_only=True, read_only=True)
     sheet_names = wb.sheetnames
@@ -64,13 +76,14 @@ def get_adaptive_tasks(target_date=None):
                             break
                         except: pass
                 
-                if parsed_date and parsed_date.year > 2020 and parsed_date <= target_date:
+                if parsed_date and parsed_date.year > 2020 and parsed_date <= revision_limit_date:
                     done_val = str(row[d_idx+1]).strip().lower() if d_idx+1 < len(row) else ""
                     if done_val not in ["done", "ok"]:
                         label = f"R{(d_idx-1)//2}" if d_idx < 11 else "Final"
-                        delay_days = (target_date - parsed_date).days
+                        delay_days = (target_date_obj - parsed_date).days
                         backlog_suffix = f" [Backlog: {delay_days} दिन पुराना]" if delay_days > 0 else ""
                         revisions.append({'subject': sub, 'topic': f"{top} ({label}){backlog_suffix}"})
+
 
     image_data = []
     for idx, c in enumerate(classes_list):
