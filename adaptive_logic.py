@@ -24,8 +24,6 @@ def get_adaptive_tasks(target_date=None):
     if target_date is None:
         # The planner generates a plan for tomorrow, so look up revisions scheduled for tomorrow
         target_date = (datetime.now() + timedelta(days=1)).date()
-        
-    from datetime import date, timedelta
     if isinstance(target_date, datetime):
         target_date_obj = target_date.date()
     else:
