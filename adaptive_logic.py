@@ -26,7 +26,7 @@ def get_adaptive_tasks(target_date=None):
     if target_date is None:
         # The planner generates a plan for tomorrow, so look up revisions scheduled for tomorrow
         target_date = (datetime.now(IST) + timedelta(days=1)).date()
-    if isinstance(target_date, datetime):
+    if hasattr(target_date, 'date') and callable(getattr(target_date, 'date')):
         target_date_obj = target_date.date()
     else:
         target_date_obj = target_date
@@ -65,9 +65,9 @@ def get_adaptive_tasks(target_date=None):
                 if d_idx >= len(row): continue
                 raw_val = row[d_idx]
                 parsed_date = None
-                if isinstance(raw_val, datetime):
+                if hasattr(raw_val, 'date') and callable(getattr(raw_val, 'date')):
                     parsed_date = raw_val.date()
-                elif isinstance(raw_val, date):
+                elif hasattr(raw_val, 'year'):
                     parsed_date = raw_val
                 elif isinstance(raw_val, str) and "/" in raw_val:
                     for fmt in ["%d/%m/%Y", "%m/%d/%Y"]:
