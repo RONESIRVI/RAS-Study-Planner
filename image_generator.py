@@ -1,7 +1,9 @@
 import os
 import shutil
 from html2image import Html2Image
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+
+IST = timezone(timedelta(hours=5, minutes=30))
 
 # Directory for automation
 BASE_DIR = "output"
@@ -46,7 +48,7 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
 
     # Date formatting logic matching DATE.jpg
     if target_date is None:
-        target_date = datetime.now() + timedelta(days=1)
+        target_date = datetime.now(IST) + timedelta(days=1)
     day_name = target_date.strftime('%A').upper()
     day_num = target_date.day
     suffix = get_day_suffix(day_num)

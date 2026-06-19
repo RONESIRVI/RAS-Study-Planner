@@ -1,7 +1,9 @@
 import os
 import json
 import smtplib
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+
+IST = timezone(timedelta(hours=5, minutes=30))
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
@@ -45,7 +47,7 @@ def send_schedule_email(attachment_paths, recipient_email, extra_msg="", custom_
     
     from datetime import date
     if target_date is None:
-        tomorrow = datetime.now() + timedelta(days=1)
+        tomorrow = datetime.now(IST) + timedelta(days=1)
     else:
         if isinstance(target_date, str):
             tomorrow = datetime.strptime(target_date.strip(), "%d-%m-%Y")

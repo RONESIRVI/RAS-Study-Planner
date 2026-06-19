@@ -2,7 +2,9 @@ import openpyxl
 import os
 import glob
 import requests
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, timezone
+
+IST = timezone(timedelta(hours=5, minutes=30))
 
 SHEET_ID = "1Zo81TfPcU09ErH7g-bj-4TksqceuBmiL"
 DOWNLOAD_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=xlsx"
@@ -23,7 +25,7 @@ def get_tracker_path():
 def get_adaptive_tasks(target_date=None):
     if target_date is None:
         # The planner generates a plan for tomorrow, so look up revisions scheduled for tomorrow
-        target_date = (datetime.now() + timedelta(days=1)).date()
+        target_date = (datetime.now(IST) + timedelta(days=1)).date()
     if isinstance(target_date, datetime):
         target_date_obj = target_date.date()
     else:

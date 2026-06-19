@@ -3,7 +3,8 @@ import json
 import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+IST = timezone(timedelta(hours=5, minutes=30))
 import adaptive_logic
 
 # Load configuration
@@ -17,7 +18,7 @@ def load_config():
 
 def send_evening_reminder(target_date=None):
     config = load_config()
-    now = datetime.now()
+    now = datetime.now(IST)
     from datetime import date
     if target_date is None:
         target_datetime = now
