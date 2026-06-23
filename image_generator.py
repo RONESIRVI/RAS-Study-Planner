@@ -24,22 +24,13 @@ def get_day_suffix(day):
 
 def create_pillar_schedule_image(tasks_data, target_date=None):
     def get_compact_class(count):
-        if is_weekend_plan:
-            if count >= 10:
-                return "super-compact-3col"
-            elif count > 5:
-                return "super-compact"
-            elif count > 3:
-                return "compact"
-            return ""
-        else:
-            if count >= 12:
-                return "super-compact-3col"
-            elif count > 7:
-                return "super-compact"
-            elif count > 4:
-                return "compact"
-            return ""
+        if count >= 10:
+            return "super-compact-3col"
+        elif count > 5:
+            return "super-compact"
+        elif count > 3:
+            return "compact"
+        return ""
 
 
     # Use absolute file:// URL so Chrome headless can always load it
@@ -217,14 +208,12 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
                 --color-mock: #a855f7;
             }}
 
-            body {{
+            html, body {{
                 margin: 0;
-
                 padding: 0;
                 width: 1280px;
                 height: 720px;
                 background: var(--bg-gradient);
-
                 font-family: 'Outfit', 'Noto Sans Devanagari', 'Mangal', 'Arial Unicode MS', 'Nirmala UI', sans-serif;
                 color: #e2e8f0;
                 overflow: hidden;
@@ -233,7 +222,7 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
             }}
 
             .container {{
-                padding: 40px;
+                padding: 30px;
                 height: 100%;
                 box-sizing: border-box;
                 display: flex;
@@ -488,10 +477,10 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
             .grid {{
                 display: grid;
                 grid-template-columns: repeat(4, 1fr);
-                gap: 24px;
+                gap: 20px;
                 align-items: stretch;
                 flex-grow: 1;
-                margin-top: 30px;
+                margin-top: 20px;
                 margin-bottom: 10px;
                 z-index: 10;
             }}
@@ -500,8 +489,8 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
                 background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
                 backdrop-filter: blur(10px);
                 border: 1px solid var(--glass-border);
-                border-radius: 24px;
-                padding: 24px;
+                border-radius: 20px;
+                padding: 20px;
                 display: flex;
                 flex-direction: column;
                 transition: all 0.3s ease;
@@ -555,7 +544,7 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
             .card h3 {{
                 font-size: 18px;
                 font-weight: 600;
-                margin: 0 0 20px 0;
+                margin: 0 0 15px 0;
                 color: #ffffff;
                 letter-spacing: 0.5px;
             }}
@@ -566,7 +555,7 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
                 margin: 0;
                 display: flex;
                 flex-direction: column;
-                gap: 12px;
+                gap: 10px;
                 overflow: hidden;
                 flex-grow: 1;
             }}
@@ -651,20 +640,20 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
             .card li {{
                 background: rgba(13, 17, 28, 0.7);
                 border: 1px solid rgba(255, 255, 255, 0.05);
-                border-radius: 12px;
-                padding: 14px 16px;
-                padding-right: 36px; /* space for the dot */
+                border-radius: 10px;
+                padding: 10px 14px;
+                padding-right: 32px; /* space for the dot */
                 position: relative;
                 box-sizing: border-box;
                 display: flex;
                 flex-direction: column;
-                gap: 4px;
+                gap: 2px;
                 box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             }}
 
             .status-dot {{
                 position: absolute;
-                right: 16px;
+                right: 12px;
                 top: 50%;
                 transform: translateY(-50%);
                 width: 8px;
@@ -680,8 +669,8 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
             .item-border {{
                 position: absolute;
                 left: 0;
-                top: 14px;
-                bottom: 14px;
+                top: 10px;
+                bottom: 10px;
                 width: 3px;
                 border-radius: 0 4px 4px 0;
             }}
