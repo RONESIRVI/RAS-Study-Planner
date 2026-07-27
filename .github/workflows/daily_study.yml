@@ -35,7 +35,17 @@ jobs:
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
           SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
           RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
-        run: python automation_main.py
+        run: |
+          python src/automation_main.py || python automation_main.py
+          
+      - name: Commit Generated Output (Plan)
+        if: github.event.schedule == '25 8 * * 0-5' || (github.event_name == 'workflow_dispatch' && inputs.run_type == 'plan')
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git add output/Pillar_Schedule.png || true
+          git commit -m "Automated Study Plan Update [skip ci]" || true
+          git push
 
       - name: Evening Run (Reminder)
         if: github.event.schedule == '41 7 * * *' || (github.event_name == 'workflow_dispatch' && inputs.run_type == 'reminder')
@@ -43,4 +53,5 @@ jobs:
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
           SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
           RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
-        run: python reminder_mailer.py
+        run: |
+          python src/reminder_mailer.py || python reminder_mailer.py
