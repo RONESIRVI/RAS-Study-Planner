@@ -8,6 +8,9 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.application import MIMEApplication
+import firebase_admin
+from firebase_admin import credentials, storage, firestore
+import uuid
 
 CONFIG_FILE = 'config.json'
 POSSIBLE_CONFIGS = [
@@ -138,7 +141,39 @@ def send_schedule_email(attachment_paths, recipient_email, extra_msg="", custom_
         """
     msg.attach(MIMEText(html_body, 'html'))
 
-    # Attach Files
+    # Firebase Upload Logic
+    def upload_to_firebase(image_path, t_date, is_wknd):
+        try:
+            if not firebase_admin._apps:
+                firebase_creds_json = os.environ.get('FIREBASE_SERVICE_ACCOUNT_KEY')
+                if firebase_creds_json:
+                    cred = credentials.Certificate(json.loads(firebase_creds_json))
+                else:
+                    cred = credentials.Certificate("firebase-key.json")
+                firebase_admin.initialize_app(cred, {
+                    'storageBucket': 'mains-rone-cse-e5268.firebasestorage.app'
+                })
+            db = firestore.client()
+            bucket = storage.bucket()
+            
+            filename = os.path.basename(image_path)
+            unique_name = f"planners/{uuid.uuid4()}_{filename}"
+            blob = bucket.blob(unique_name)
+            blob.upload_from_filename(image_path)
+            blob.make_public()
+            image_url = blob.public_url
+            
+            db.collection('planners').add({
+                'url': image_url,
+                'target_date': t_date.strftime('%Y-%m-%d') if hasattr(t_date, 'strftime') else str(t_date),
+                'is_weekend': is_wknd,
+                'uploaded_at': firestore.SERVER_TIMESTAMP
+            })
+            print(f"[SUCCESS] Planner uploaded to Firebase: {image_url}")
+        except Exception as e:
+            print(f"[ERROR] Firebase Upload failed: {e}")
+
+    # Attach Files & Upload to Firebase
     for path in attachment_paths:
         if path and os.path.exists(path):
             print(f"Attaching: {path}")
@@ -147,6 +182,8 @@ def send_schedule_email(attachment_paths, recipient_email, extra_msg="", custom_
                 name = os.path.basename(path)
                 if path.endswith('.png'):
                     part = MIMEImage(file_data, name=name)
+                    # Upload PNG to Firebase so it shows on the Web Dashboard
+                    upload_to_firebase(path, tomorrow, is_weekend_plan)
                 else:
                     part = MIMEApplication(file_data, Name=name)
                     part['Content-Disposition'] = f'attachment; filename="{name}"'
