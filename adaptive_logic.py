@@ -44,9 +44,26 @@ def get_adaptive_tasks(target_date=None):
     main_sheet = next((s for s in ['📋 Master Tracker', 'Master Tracker'] if s in sheet_names), sheet_names[0])
     ws = wb[main_sheet]
     classes_list, revisions = [], []
+    
+    # Track Progress
+    progress_stats = {}
+    
     for row in ws.iter_rows(min_row=4, max_row=200, values_only=True):
         if not row or len(row) < 14: continue
-        if row[1] and str(row[13]).strip().lower() != "done" and len(classes_list) < 2:
+        
+        subject = str(row[0]).strip()
+        topic = str(row[1]).strip()
+        status = str(row[13]).strip().lower()
+        
+        if subject and topic and topic != "None":
+            if subject not in progress_stats:
+                progress_stats[subject] = {'total': 0, 'completed': 0}
+            
+            progress_stats[subject]['total'] += 1
+            if status == "done":
+                progress_stats[subject]['completed'] += 1
+                
+        if row[1] and status != "done" and len(classes_list) < 2:
             classes_list.append({'subject': str(row[0]), 'topic': str(row[1])})
             revisions.append({'subject': str(row[0]), 'topic': f"{row[1]} (Same Day Rev)"})
 
@@ -91,7 +108,7 @@ def get_adaptive_tasks(target_date=None):
     image_data.append({'sr': len(image_data)+1, 'task': 'REVISION', 'revisions': revisions})
     image_data.append({'sr': len(image_data)+1, 'task': 'Analysis', 'subject': 'PYQ Review', 'topic': 'Previous Year Questions Analysis'})
     
-    return image_data, classes_list
+    return image_data, classes_list, progress_stats
 
 def get_weekly_roadmap():
     return ["Next topics are loaded dynamically from Master Tracker."]

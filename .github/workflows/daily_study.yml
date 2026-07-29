@@ -45,7 +45,7 @@ jobs:
         run: |
           git config --global user.name "GitHub Action"
           git config --global user.email "action@github.com"
-          git add output/Pillar_Schedule.png output/todays_tasks.json || true
+          git add output/Pillar_Schedule.png output/todays_tasks.json output/progress.json || true
           git commit -m "Automated Study Plan Update [skip ci]" || true
           git push
 

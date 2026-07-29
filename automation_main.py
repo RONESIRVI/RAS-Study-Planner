@@ -42,13 +42,18 @@ def run_automation():
             extra_msg = ""
 
         # 1. Fetch Adaptive Tasks and Revisions for tomorrow
-        image_data, classes_list = adaptive_logic.get_adaptive_tasks(tomorrow)
+        image_data, classes_list, progress_stats = adaptive_logic.get_adaptive_tasks(tomorrow)
         
         # Save tasks to JSON for Web Dashboard
         json_path = os.path.join("output", "todays_tasks.json")
         os.makedirs("output", exist_ok=True)
         with open(json_path, 'w', encoding='utf-8') as jf:
             json.dump(image_data, jf, ensure_ascii=False, indent=4)
+            
+        # Save progress stats to JSON for Web Dashboard
+        progress_path = os.path.join("output", "progress.json")
+        with open(progress_path, 'w', encoding='utf-8') as pf:
+            json.dump(progress_stats, pf, ensure_ascii=False, indent=4)
         
         if not classes_list:
             print("INFO: No pending tasks found for today. (Check if everything is marked 'done')")
