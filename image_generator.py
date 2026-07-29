@@ -834,5 +834,11 @@ def create_pillar_schedule_image(tasks_data, target_date=None):
     
     # Generate Image with native high-DPI scaling
     hti.screenshot(html_str=html_content, save_as='Pillar_Schedule.png', size=(1280, 720))
+    
+    # Save a date-specific copy for the Web Dashboard history
+    if target_date:
+        date_str = target_date.strftime('%Y-%m-%d')
+        date_img_name = f'plan_{date_str}.png'
+        hti.screenshot(html_str=html_content, save_as=date_img_name, size=(1280, 720))
 
     return os.path.join(BASE_DIR, "Pillar_Schedule.png")

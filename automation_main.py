@@ -44,10 +44,16 @@ def run_automation():
         # 1. Fetch Adaptive Tasks and Revisions for tomorrow
         image_data, classes_list, progress_stats = adaptive_logic.get_adaptive_tasks(tomorrow)
         
-        # Save tasks to JSON for Web Dashboard
+        # Save tasks to JSON for Web Dashboard (Standard name)
         json_path = os.path.join("output", "todays_tasks.json")
         os.makedirs("output", exist_ok=True)
         with open(json_path, 'w', encoding='utf-8') as jf:
+            json.dump(image_data, jf, ensure_ascii=False, indent=4)
+            
+        # Save tasks with Date-specific name to preserve history for Dashboard
+        date_str = tomorrow.strftime('%Y-%m-%d')
+        date_json_path = os.path.join("output", f"plan_{date_str}.json")
+        with open(date_json_path, 'w', encoding='utf-8') as jf:
             json.dump(image_data, jf, ensure_ascii=False, indent=4)
             
         # Save progress stats to JSON for Web Dashboard
