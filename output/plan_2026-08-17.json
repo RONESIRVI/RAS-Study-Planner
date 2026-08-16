@@ -1,0 +1,34 @@
+[
+    {
+        "sr": 1,
+        "task": "CLASSES 1",
+        "subject": " राजस्थान का इतिहास",
+        "topic": "प्रागैतिहासिक स्थल/सभ्यताएँ (पुरापाषाण-ताम्रपाषाण)"
+    },
+    {
+        "sr": 2,
+        "task": "CLASSES 2",
+        "subject": " राजस्थान का इतिहास",
+        "topic": "पुरातात्विक स्रोत"
+    },
+    {
+        "sr": 3,
+        "task": "REVISION",
+        "revisions": [
+            {
+                "subject": " राजस्थान का इतिहास",
+                "topic": "प्रागैतिहासिक स्थल/सभ्यताएँ (पुरापाषाण-ताम्रपाषाण) (Same Day Rev)"
+            },
+            {
+                "subject": " राजस्थान का इतिहास",
+                "topic": "पुरातात्विक स्रोत (Same Day Rev)"
+            }
+        ]
+    },
+    {
+        "sr": 4,
+        "task": "Analysis",
+        "subject": "PYQ Review",
+        "topic": "Previous Year Questions Analysis"
+    }
+]
